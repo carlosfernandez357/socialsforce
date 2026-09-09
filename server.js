@@ -500,7 +500,7 @@ app.get("/createArticle", async (req, res) => {
 
     try {
 
-        const { prompt } = "crea un articulo sobre chatgpt"//req.body;
+        const { prompt } = req.body;
 
         if (!prompt || typeof prompt !== "string") {
             return res.status(400).json({
