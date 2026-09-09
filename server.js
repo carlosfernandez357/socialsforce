@@ -508,7 +508,7 @@ app.post("/createArticle", async (req, res) => {
             });
         }
 
-        const systemprompt = fs.readFileSync(
+        const systemPrompt = fs.readFileSync(
             path.join(__dirname, "prompts", "article-system.txt"),
             "utf8"
         );
@@ -522,7 +522,7 @@ app.post("/createArticle", async (req, res) => {
             },
 
             body: JSON.stringify({
-                systemprompt,
+                systemPrompt,
                 prompt
             })
 
@@ -537,7 +537,7 @@ app.post("/createArticle", async (req, res) => {
             );
         }
 
-        const article = await aiResponse.json();
+        const article = await aiResponse.json().output;
 
         if (
             !article.title ||
