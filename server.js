@@ -496,7 +496,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
 
 
-app.get("/createArticle", async (req, res) => {
+app.post("/createArticle", async (req, res) => {
 
     try {
 
