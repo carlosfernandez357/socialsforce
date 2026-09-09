@@ -502,8 +502,8 @@ app.post("/createArticle", async (req, res) => {
     console.log("BODY:", req.body);
     try {
 
-        const { prompt } = req.body;
-
+        const { data } = req.body;
+        let prompt = data.prompt
         if (!prompt || typeof prompt !== "string") {
             return res.status(400).json({
                 success: false,
