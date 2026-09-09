@@ -270,7 +270,114 @@ app.get("/trending", async (req, res) => {
 
 
 
+app.get("/categories", async (req, res) => {
 
+    try {
+
+        const [categoryRows] = await db.query(`
+            SELECT category
+            FROM posts
+            WHERE category IS NOT NULL
+              AND category != ''
+              AND published_at <= NOW()
+            GROUP BY category
+            ORDER BY category ASC
+        `);
+
+
+        const categories = [];
+
+
+        for (const row of categoryRows) {
+
+            const [posts] = await db.query(`
+                SELECT *
+                FROM posts
+                WHERE category = ?
+                  AND published_at <= NOW()
+                ORDER BY published_at DESC
+                LIMIT 8
+            `, [row.category]);
+
+
+            categories.push({
+                name: row.category,
+                slug: row.category.toLowerCase(),
+                posts
+            });
+
+        }
+
+
+        res.render("categories", {
+            categories
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send("Error al cargar las categorías");
+
+    }
+
+});
+
+
+
+
+
+
+app.get("/category/:category", async (req, res) => {
+
+    try {
+
+        const categoryParam = req.params.category;
+
+        const [categoryRows] = await db.query(`
+            SELECT DISTINCT category
+            FROM posts
+            WHERE LOWER(category) = ?
+              AND published_at <= NOW()
+            LIMIT 1
+        `, [categoryParam.toLowerCase()]);
+
+
+        if (categoryRows.length === 0) {
+
+            return res.status(404).send("Category not found");
+
+        }
+
+
+        const category = categoryRows[0].category;
+
+
+        const [posts] = await db.query(`
+            SELECT *
+            FROM posts
+            WHERE category = ?
+              AND published_at <= NOW()
+            ORDER BY published_at DESC
+        `, [category]);
+
+
+        res.render("category", {
+            category,
+            posts
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send("Error al cargar la categoría");
+
+    }
+
+});
 
 
 
