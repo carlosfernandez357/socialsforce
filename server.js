@@ -2,17 +2,40 @@ const express = require("express");
 const db = require("./db");
 
 const app = express();
+app.set("view engine", "ejs");
+app.set("views", "./views");
+app.use(express.static("public"));
+
+
+
+
+
+
+
+
+
 
 app.get("/", async (req, res) => {
     try {
-        const [rows] = await db.query("SELECT * FROM posts");
+        const [posts] = await db.query(
+            "SELECT * FROM posts ORDER BY published_at DESC"
+        );
 
-        res.json(rows);
+        res.render("home", { posts });
+
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error de conexión con la base de datos");
+        res.status(500).send("Error al cargar los posts");
     }
 });
+
+
+
+
+
+
+
+
 
 app.listen(process.env.PORT || 3000, () => {
     console.log("SocialsForce funcionando");

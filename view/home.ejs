@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SocialsForce</title>
+</head>
+
+<body>
+
+    <h1>SocialsForce</h1>
+
+    <% if (posts.length === 0) { %>
+
+        <p>No hay noticias todavía.</p>
+
+    <% } else { %>
+
+        <% posts.forEach(post => { %>
+
+            <article>
+                <h2><%= post.title %></h2>
+
+                <% if (post.excerpt) { %>
+                    <p><%= post.excerpt %></p>
+                <% } %>
+
+                <a href="/article/<%= post.slug %>">
+                    Leer más
+                </a>
+            </article>
+
+        <% }) %>
+
+    <% } %>
+
+</body>
+</html>
