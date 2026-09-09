@@ -383,6 +383,103 @@ app.get("/category/:category", async (req, res) => {
 
 
 
+async function generateSitemap(db) {
+
+    const baseUrl = 'https://socialsforce.com';
+
+    const [posts] = await db.query(`
+        SELECT slug, updated_at
+        FROM posts
+        ORDER BY updated_at DESC
+    `);
+
+    const [categories] = await db.query(`
+        SELECT DISTINCT category
+        FROM posts
+        WHERE category IS NOT NULL
+        AND category != ''
+    `);
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <url>
+        <loc>${baseUrl}/</loc>
+        <changefreq>hourly</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <url>
+        <loc>${baseUrl}/trending</loc>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>${baseUrl}/recent</loc>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>${baseUrl}/categories</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+`;
+
+    categories.forEach(category => {
+
+        xml += `
+    <url>
+        <loc>${baseUrl}/category/${encodeURIComponent(category.category.toLowerCase())}</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+`;
+
+    });
+
+    posts.forEach(post => {
+
+        xml += `
+    <url>
+        <loc>${baseUrl}/article/${post.slug}</loc>
+        <lastmod>${new Date(post.updated_at).toISOString()}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+`;
+
+    });
+
+    xml += `
+</urlset>`;
+
+    return xml;
+}
+
+app.get('/sitemap.xml', async (req, res) => {
+
+    try {
+
+        const sitemap = await generateSitemap(db);
+
+        res.header('Content-Type', 'application/xml');
+        res.send(sitemap);
+
+    } catch (error) {
+
+        console.error(error);
+        res.status(500).send('Error generating sitemap');
+
+    }
+
+});
+
+
+
 
 
 app.listen(process.env.PORT || 3000, () => {
