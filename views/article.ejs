@@ -189,18 +189,111 @@
                 </article>
 
 
-                <!-- BACK LINK -->
+            <!-- RELATED CONTENT -->
 
-                <div class="article-navigation">
+            <% if (relatedPosts && relatedPosts.length > 0) { %>
 
-                    <a
-                        href="/recent"
-                        class="article-back-link"
-                    >
-                        ← Back to latest news
-                    </a>
+            <section id="related-content-section">
+
+                <div class="content-container">
+
+                    <div class="section-header">
+
+                        <h2 class="section-title">
+                            Related Content
+                        </h2>
+
+                        <a
+                            href="/category/<%= post.category.toLowerCase() %>"
+                            class="section-link"
+                        >
+                            View all
+                        </a>
+
+                    </div>
+
+
+                    <div class="related-posts-grid">
+
+                        <% relatedPosts.forEach(post => { %>
+
+                        <article class="post-card">
+
+                            <a href="/article/<%= post.slug %>">
+
+                                <% if (post.image) { %>
+
+                                <img
+                                    src="<%= post.image %>"
+                                    alt="<%= post.title %>"
+                                    class="post-image"
+                                >
+
+                                <% } %>
+
+                                <div class="post-content">
+
+                                    <% if (post.category) { %>
+
+                                    <span class="post-category">
+                                        <%= post.category %>
+                                    </span>
+
+                                    <% } %>
+
+                                    <h3 class="post-title">
+                                        <%= post.title %>
+                                    </h3>
+
+                                    <span class="post-date">
+
+                                        <%= new Date(post.published_at).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric"
+                                        }) %>
+
+                                    </span>
+
+                                </div>
+
+                            </a>
+
+                        </article>
+
+                        <% }) %>
+
+                    </div>
 
                 </div>
+
+            </section>
+
+            <% } %>
+
+
+            <!-- RANDOM BACK NAVIGATION -->
+
+            <section class="article-navigation-section">
+
+                <div class="content-container">
+
+                    <div class="article-navigation">
+
+                        <a
+                            href="<%= backDestination.url %>"
+                            class="article-back-link"
+                        >
+                            ← <%= backDestination.label %>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
 
             </div>
 

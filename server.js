@@ -100,12 +100,12 @@ app.get("/", async (req, res) => {
 
 
 
-
 app.get("/article/:slug", async (req, res) => {
     try {
 
         const { slug } = req.params;
 
+        // Obtener artículo
         const [rows] = await db.query(`
             SELECT *
             FROM posts
@@ -120,6 +120,7 @@ app.get("/article/:slug", async (req, res) => {
 
         const post = rows[0];
 
+
         // Incrementar visitas
         await db.query(`
             UPDATE posts
@@ -127,11 +128,58 @@ app.get("/article/:slug", async (req, res) => {
             WHERE id = ?
         `, [post.id]);
 
-        // Actualizar el valor mostrado
         post.views += 1;
 
+
+        // Contenido relacionado
+        const [relatedPosts] = await db.query(`
+            SELECT *
+            FROM posts
+            WHERE category = ?
+              AND id != ?
+              AND published_at <= NOW()
+            ORDER BY RAND()
+            LIMIT 3
+        `, [post.category, post.id]);
+
+
+        // Destinos posibles para el botón inferior
+        const backOptions = [
+            {
+                label: "Back to home",
+                url: "/"
+            },
+            {
+                label: "Back to latest news",
+                url: "/recent"
+            },
+            {
+                label: "Back to trending",
+                url: "/trending"
+            }
+        ];
+
+
+        // Añadir categoría si existe
+        if (post.category) {
+
+            backOptions.push({
+                label: `Back to ${post.category}`,
+                url: `/category/${post.category.toLowerCase()}`
+            });
+
+        }
+
+
+        // Elegir destino aleatorio
+        const backDestination =
+            backOptions[Math.floor(Math.random() * backOptions.length)];
+
+
         res.render("article", {
-            post
+            post,
+            relatedPosts,
+            backDestination
         });
 
     } catch (error) {
