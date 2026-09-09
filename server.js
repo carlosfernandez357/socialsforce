@@ -497,13 +497,10 @@ app.get('/sitemap.xml', async (req, res) => {
 
 
 app.post("/createArticle", async (req, res) => {
-    console.log("METHOD:", req.method);
-    console.log("HEADERS:", req.headers);
     console.log("BODY:", req.body);
     try {
 
-        const { data } = req.body;
-        const prompt = data.prompt;
+        const prompt = req.body.prompt;
         if (!prompt) {
             return res.status(400).json({
                 success: false,
