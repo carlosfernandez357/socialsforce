@@ -1,6 +1,8 @@
 const express = require("express");
 const db = require("./db");
 const path = require("path");
+const fs = require("fs");
+
 
 const app = express();
 app.set("view engine", "ejs");
@@ -11,7 +13,16 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 
+const viewsPath = path.join(__dirname, "views");
 
+console.log("SERVER DIR:", __dirname);
+console.log("VIEWS PATH:", viewsPath);
+
+try {
+    console.log("VIEWS CONTENTS:", fs.readdirSync(viewsPath));
+} catch (error) {
+    console.error("ERROR READING VIEWS:", error);
+}
 
 
 
