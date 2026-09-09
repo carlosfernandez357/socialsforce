@@ -1,34 +1,30 @@
 <!DOCTYPE html>
-
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<title>SocialsForce - News, Trends and Digital Culture</title>
-<meta
-    name="description"
-    content="SocialsForce brings you the latest news, trends, technology, gaming, AI and internet culture."
->
+    <title>SocialsForce - News, Trends and Digital Culture</title>
 
-<link rel="stylesheet" href="/css/style.css">
+    <meta
+        name="description"
+        content="SocialsForce brings you the latest news, trends, technology, gaming, AI and internet culture."
+    >
 
-<!-- Google Font -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
->
-```
+    <link rel="stylesheet" href="/css/style.css">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
 </head>
 
 <body>
 
-```
-<!-- MAIN CONTENT -->
 <main id="homepage">
 
 
@@ -49,19 +45,23 @@
 
                     <% if (featuredPost.image) { %>
 
-                        <img
-                            src="<%= featuredPost.image %>"
-                            alt="<%= featuredPost.title %>"
-                            class="featured-article-image"
-                        >
+                    <img
+                        src="<%= featuredPost.image %>"
+                        alt="<%= featuredPost.title %>"
+                        class="featured-article-image"
+                    >
 
                     <% } %>
 
                     <div class="featured-article-content">
 
+                        <% if (featuredPost.category) { %>
+
                         <span class="article-category">
                             <%= featuredPost.category %>
                         </span>
+
+                        <% } %>
 
                         <h1 class="featured-article-title">
                             <%= featuredPost.title %>
@@ -69,9 +69,9 @@
 
                         <% if (featuredPost.excerpt) { %>
 
-                            <p class="featured-article-summary">
-                                <%= featuredPost.excerpt %>
-                            </p>
+                        <p class="featured-article-summary">
+                            <%= featuredPost.excerpt %>
+                        </p>
 
                         <% } %>
 
@@ -131,11 +131,11 @@
 
                         <% if (post.image) { %>
 
-                            <img
-                                src="<%= post.image %>"
-                                alt="<%= post.title %>"
-                                class="post-image"
-                            >
+                        <img
+                            src="<%= post.image %>"
+                            alt="<%= post.title %>"
+                            class="post-image"
+                        >
 
                         <% } %>
 
@@ -143,9 +143,9 @@
 
                             <% if (post.category) { %>
 
-                                <span class="post-category">
-                                    <%= post.category %>
-                                </span>
+                            <span class="post-category">
+                                <%= post.category %>
+                            </span>
 
                             <% } %>
 
@@ -212,11 +212,11 @@
 
                         <% if (post.image) { %>
 
-                            <img
-                                src="<%= post.image %>"
-                                alt="<%= post.title %>"
-                                class="horizontal-post-image"
-                            >
+                        <img
+                            src="<%= post.image %>"
+                            alt="<%= post.title %>"
+                            class="horizontal-post-image"
+                        >
 
                         <% } %>
 
@@ -224,9 +224,9 @@
 
                             <% if (post.category) { %>
 
-                                <span class="post-category">
-                                    <%= post.category %>
-                                </span>
+                            <span class="post-category">
+                                <%= post.category %>
+                            </span>
 
                             <% } %>
 
@@ -236,9 +236,9 @@
 
                             <% if (post.excerpt) { %>
 
-                                <p class="post-summary">
-                                    <%= post.excerpt %>
-                                </p>
+                            <p class="post-summary">
+                                <%= post.excerpt %>
+                            </p>
 
                             <% } %>
 
@@ -301,11 +301,11 @@
 
                         <% if (post.image) { %>
 
-                            <img
-                                src="<%= post.image %>"
-                                alt="<%= post.title %>"
-                                class="post-image"
-                            >
+                        <img
+                            src="<%= post.image %>"
+                            alt="<%= post.title %>"
+                            class="post-image"
+                        >
 
                         <% } %>
 
@@ -344,7 +344,6 @@
 
 
 <script src="/js/main.js"></script>
-```
 
 </body>
 </html>
