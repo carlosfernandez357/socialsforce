@@ -537,8 +537,8 @@ app.post("/createArticle", async (req, res) => {
             );
         }
 
-        const article = await aiResponse.json().output;
-
+        const article = await aiResponse.json();
+        console.log(article)
         if (
             !article.title ||
             !article.slug ||
