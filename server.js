@@ -1,11 +1,12 @@
 const express = require("express");
+const fs = require("fs");
 const db = require("./db");
 const path = require("path");
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.json());
 
 
 
@@ -477,6 +478,139 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get("/createArticle", async (req, res) => {
+
+    try {
+
+        const { prompt } = "crea un articulo sobre chatgpt"//req.body;
+
+        if (!prompt || typeof prompt !== "string") {
+            return res.status(400).json({
+                success: false,
+                error: "Prompt is required"
+            });
+        }
+
+        const systemprompt = fs.readFileSync(
+            path.join(__dirname, "prompts", "article-system.txt"),
+            "utf8"
+        );
+
+        const aiResponse = await fetch("https://n8n.legion.software/webhook-test/socialsForceLlm", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                systemprompt,
+                prompt
+            })
+
+        });
+
+        if (!aiResponse.ok) {
+
+            const errorText = await aiResponse.text();
+
+            throw new Error(
+                `AI API error ${aiResponse.status}: ${errorText}`
+            );
+        }
+
+        const article = await aiResponse.json();
+
+        if (
+            !article.title ||
+            !article.slug ||
+            !article.excerpt ||
+            !article.content ||
+            !article.category
+        ) {
+            return res.status(500).json({
+                success: false,
+                error: "AI returned incomplete article data"
+            });
+        }
+
+        const randomImageText = "images/ai/1.jpg"
+
+        const currentDate = new Date();
+
+        const [result] = await db.query(`
+            INSERT INTO posts (
+                title,
+                slug,
+                excerpt,
+                content,
+                image,
+                category,
+                published_at,
+                views
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            article.title,
+            article.slug,
+            article.excerpt,
+            article.content,
+            randomImageText,
+            article.category,
+            currentDate,
+            0
+        ]);
+
+        res.status(201).json({
+            success: true,
+            post_id: result.insertId,
+            title: article.title,
+            slug: article.slug
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            error: "Error creating article"
+        });
+
+    }
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
