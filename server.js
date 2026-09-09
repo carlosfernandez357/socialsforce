@@ -104,5 +104,5 @@ app.get("/", async (req, res) => {
 
 
 app.listen(process.env.PORT || 3000, () => {
-    console.log("SocialsForce funcionando");
+    console.log("SocialsForce funcionando.");
 });
