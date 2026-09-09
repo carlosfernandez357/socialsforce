@@ -101,6 +101,54 @@ app.get("/", async (req, res) => {
 
 
 
+app.get("/article/:slug", async (req, res) => {
+    try {
+
+        const { slug } = req.params;
+
+        const [rows] = await db.query(`
+            SELECT *
+            FROM posts
+            WHERE slug = ?
+              AND published_at <= NOW()
+            LIMIT 1
+        `, [slug]);
+
+        if (rows.length === 0) {
+            return res.status(404).send("Article not found");
+        }
+
+        const post = rows[0];
+
+        // Incrementar visitas
+        await db.query(`
+            UPDATE posts
+            SET views = views + 1
+            WHERE id = ?
+        `, [post.id]);
+
+        // Actualizar el valor mostrado
+        post.views += 1;
+
+        res.render("article", {
+            post
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send("Error al cargar el artículo");
+    }
+});
+
+
+
+
+
+
+
+
 
 
 app.listen(process.env.PORT || 3000, () => {

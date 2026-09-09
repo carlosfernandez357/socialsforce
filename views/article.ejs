@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        <%= post.title %> - SocialsForce
+    </title>
+
+    <meta
+        name="description"
+        content="<%= post.excerpt || post.title %>"
+    >
+
+    <meta
+        property="og:title"
+        content="<%= post.title %>"
+    >
+
+    <meta
+        property="og:description"
+        content="<%= post.excerpt || post.title %>"
+    >
+
+    <% if (post.image) { %>
+
+    <meta
+        property="og:image"
+        content="<%= post.image %>"
+    >
+
+    <% } %>
+
+    <meta
+        property="og:type"
+        content="article"
+    >
+
+    <meta
+        property="og:site_name"
+        content="SocialsForce"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/css/style.css"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+
+    <%- include("partials/header") %>
+
+
+    <main id="article-page">
+
+
+        <!-- ARTICLE HEADER -->
+
+        <section class="article-header-section">
+
+            <div class="content-container">
+
+                <div class="article-header">
+
+                    <% if (post.category) { %>
+
+                    <a
+                        href="/category/<%= post.category.toLowerCase() %>"
+                        class="article-category"
+                    >
+                        <%= post.category %>
+                    </a>
+
+                    <% } %>
+
+
+                    <h1 class="article-title">
+                        <%= post.title %>
+                    </h1>
+
+
+                    <% if (post.excerpt) { %>
+
+                    <p class="article-excerpt">
+                        <%= post.excerpt %>
+                    </p>
+
+                    <% } %>
+
+
+                    <div class="article-meta">
+
+                        <% if (post.published_at) { %>
+
+                        <time
+                            datetime="<%= post.published_at.toISOString() %>"
+                        >
+                            <%= new Date(post.published_at).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            }) %>
+                        </time>
+
+                        <% } %>
+
+
+                        <% if (post.views !== undefined) { %>
+
+                        <span class="article-views">
+                            <%= post.views.toLocaleString("en-US") %> views
+                        </span>
+
+                        <% } %>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ARTICLE IMAGE -->
+
+        <% if (post.image) { %>
+
+        <section class="article-image-section">
+
+            <div class="content-container">
+
+                <figure class="article-image-wrapper">
+
+                    <img
+                        src="<%= post.image %>"
+                        alt="<%= post.title %>"
+                        class="article-main-image"
+                    >
+
+                </figure>
+
+            </div>
+
+        </section>
+
+        <% } %>
+
+
+
+        <!-- ARTICLE CONTENT -->
+
+        <section class="article-content-section">
+
+            <div class="content-container">
+
+                <article class="article-content">
+
+                    <%- post.content %>
+
+                </article>
+
+
+                <!-- BACK LINK -->
+
+                <div class="article-navigation">
+
+                    <a
+                        href="/recent"
+                        class="article-back-link"
+                    >
+                        ← Back to latest news
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+    <%- include("partials/footer") %>
+
+
+    <script src="/js/main.js"></script>
+
+
+</body>
+
+</html>
