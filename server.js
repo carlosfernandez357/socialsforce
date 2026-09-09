@@ -497,7 +497,9 @@ app.get('/sitemap.xml', async (req, res) => {
 
 
 app.post("/createArticle", async (req, res) => {
-
+    console.log("METHOD:", req.method);
+    console.log("HEADERS:", req.headers);
+    console.log("BODY:", req.body);
     try {
 
         const { prompt } = req.body;
