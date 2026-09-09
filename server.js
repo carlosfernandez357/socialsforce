@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const viewsPath = path.join(__dirname, "views");
 
-console.log("SERVER DIR:", __dirname);
+console.log("SERVER DIR:", __dirname + "/views");
 console.log("VIEWS PATH:", viewsPath);
 
 try {
