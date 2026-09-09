@@ -1,0 +1,183 @@
+<!-- HEADER -->
+<header id="site-header">
+
+    <div class="header-container">
+
+        <!-- LOGO -->
+        <a href="/" id="site-logo">
+            SOCIALSFORCE
+        </a>
+
+        <!-- DESKTOP NAVIGATION -->
+        <nav id="main-navigation">
+
+            <a href="/recent" class="navigation-link">
+                Recent
+            </a>
+
+            <a href="/trending" class="navigation-link">
+                Trending
+            </a>
+
+            <div class="categories-dropdown">
+
+                <button
+                    id="categories-button"
+                    class="navigation-button"
+                    type="button"
+                >
+                    Categories
+                    <span class="dropdown-arrow">⌄</span>
+                </button>
+
+                <div id="categories-menu" class="categories-menu">
+
+                    <a href="/category/ai" class="category-link">
+                        AI
+                    </a>
+
+                    <a href="/category/technology" class="category-link">
+                        Technology
+                    </a>
+
+                    <a href="/category/gaming" class="category-link">
+                        Gaming
+                    </a>
+
+                    <a href="/category/internet" class="category-link">
+                        Internet
+                    </a>
+
+                    <a href="/category/curiosities" class="category-link">
+                        Curiosities
+                    </a>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+
+        <!-- HEADER ACTIONS -->
+        <div id="header-actions">
+
+            <!-- SEARCH -->
+            <button
+                id="search-button"
+                class="icon-button"
+                type="button"
+                aria-label="Search"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
+                </svg>
+            </button>
+
+
+            <!-- MOBILE MENU -->
+            <button
+                id="mobile-menu-button"
+                class="icon-button mobile-menu-button"
+                type="button"
+                aria-label="Open menu"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH BAR -->
+    <div id="search-container">
+
+        <form id="search-form" action="/search" method="GET">
+
+            <div class="search-input-wrapper">
+
+                <svg
+                    class="search-input-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
+                </svg>
+
+                <input
+                    id="search-input"
+                    name="q"
+                    type="search"
+                    placeholder="Search news, topics and trends..."
+                    autocomplete="off"
+                >
+
+                <button
+                    id="search-submit"
+                    type="submit"
+                >
+                    Search
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- MOBILE NAVIGATION -->
+    <nav id="mobile-navigation">
+
+        <a href="/recent" class="mobile-navigation-link">
+            Recent
+        </a>
+
+        <a href="/trending" class="mobile-navigation-link">
+            Trending
+        </a>
+
+        <div class="mobile-category-list">
+
+            <span class="mobile-category-title">
+                Categories
+            </span>
+
+            <a href="/category/ai" class="mobile-navigation-link">
+                AI
+            </a>
+
+            <a href="/category/technology" class="mobile-navigation-link">
+                Technology
+            </a>
+
+            <a href="/category/gaming" class="mobile-navigation-link">
+                Gaming
+            </a>
+
+            <a href="/category/internet" class="mobile-navigation-link">
+                Internet
+            </a>
+
+            <a href="/category/curiosities" class="mobile-navigation-link">
+                Curiosities
+            </a>
+
+        </div>
+
+    </nav>
+
+</header>
