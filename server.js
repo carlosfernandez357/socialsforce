@@ -513,7 +513,7 @@ app.post("/createArticle", async (req, res) => {
             "utf8"
         );
 
-        const aiResponse = await fetch("https://n8n.legion.software/webhook-test/socialsForceLlm", {
+        const aiResponse = await fetch("https://n8n.legion.software/webhook/socialsForceLlm", {
 
             method: "POST",
 
