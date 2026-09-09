@@ -182,6 +182,8 @@ app.get("/article/:slug", async (req, res) => {
             backDestination
         });
 
+
+        
     } catch (error) {
 
         console.error(error);
@@ -189,6 +191,83 @@ app.get("/article/:slug", async (req, res) => {
         res.status(500).send("Error al cargar el artículo");
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get("/recent", async (req, res) => {
+
+    try {
+
+        const [posts] = await db.query(`
+            SELECT *
+            FROM posts
+            WHERE published_at <= NOW()
+            ORDER BY published_at DESC
+        `);
+
+        res.render("recent", {
+            posts
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send("Error al cargar las noticias");
+
+    }
+
+});
+
+
+// TRENDING
+
+app.get("/trending", async (req, res) => {
+
+    try {
+
+        const [posts] = await db.query(`
+            SELECT *
+            FROM posts
+            WHERE published_at <= NOW()
+            ORDER BY views DESC
+        `);
+
+        res.render("trending", {
+            posts
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send("Error al cargar las tendencias");
+
+    }
+
+});
+
+
+
+
+
+
 
 
 

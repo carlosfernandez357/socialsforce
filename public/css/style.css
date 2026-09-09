@@ -1533,3 +1533,300 @@ input {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   LISTING PAGES
+========================================================= */
+
+.listing-page-section {
+    padding: 80px 0 100px;
+}
+
+
+.listing-page-header {
+    max-width: 750px;
+    margin-bottom: 55px;
+}
+
+
+.listing-page-label {
+    display: block;
+
+    margin-bottom: 15px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+
+    color: #888;
+}
+
+
+.listing-page-title {
+    margin: 0;
+
+    font-size: clamp(42px, 6vw, 68px);
+    line-height: 1.05;
+
+    font-weight: 800;
+    letter-spacing: -0.045em;
+
+    color: #171717;
+}
+
+
+.listing-page-description {
+    max-width: 650px;
+
+    margin: 22px 0 0;
+
+    font-size: 18px;
+    line-height: 1.6;
+
+    color: #666;
+}
+
+
+/* =========================================================
+   POSTS GRID
+========================================================= */
+
+.listing-posts-grid {
+    display: grid;
+
+    grid-template-columns: repeat(
+        3,
+        minmax(0, 1fr)
+    );
+
+    gap: 32px 24px;
+}
+
+
+.listing-posts-grid .post-card {
+    min-width: 0;
+}
+
+
+.listing-posts-grid .post-title {
+    margin-top: 9px;
+}
+
+
+.listing-posts-grid .post-summary {
+    margin-top: 12px;
+}
+
+
+.listing-posts-grid .post-date {
+    display: block;
+
+    margin-top: 16px;
+}
+
+
+/* =========================================================
+   TRENDING META
+========================================================= */
+
+.post-meta {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 16px;
+
+    font-size: 12px;
+    color: #888;
+}
+
+
+.post-views {
+    display: inline-flex;
+    align-items: center;
+}
+
+
+.post-views::before {
+    content: "·";
+
+    margin-right: 14px;
+
+    color: #bbb;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-posts {
+    padding: 80px 0;
+
+    text-align: center;
+
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+
+.empty-posts h2 {
+    margin: 0;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    color: #171717;
+}
+
+
+.empty-posts p {
+    margin-top: 12px;
+
+    font-size: 15px;
+
+    color: #777;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .listing-posts-grid {
+        grid-template-columns: repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .listing-page-section {
+        padding: 50px 0 70px;
+    }
+
+
+    .listing-page-header {
+        margin-bottom: 40px;
+    }
+
+
+    .listing-page-title {
+        font-size: 42px;
+    }
+
+
+    .listing-page-description {
+        font-size: 16px;
+    }
+
+
+    .listing-posts-grid {
+        grid-template-columns: 1fr;
+
+        gap: 28px;
+    }
+
+}
