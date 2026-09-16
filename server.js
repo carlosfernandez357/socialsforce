@@ -535,7 +535,31 @@ app.get('/sitemap.xml', async (req, res) => {
 
 
 
+const extractPage = require("./utils/extractPage");
 
+app.get("/api/extract", async (req, res) => {
+    try {
+        const url = req.query.url;
+
+        if (!url) {
+            return res.status(400).json({
+                error: "Falta el parámetro url"
+            });
+        }
+
+        const result = await extractPage(url);
+
+        res.json(result);
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            error: "No se pudo extraer la página",
+            message: error.message
+        });
+    }
+});
 
 
 
