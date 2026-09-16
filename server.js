@@ -574,7 +574,7 @@ app.post("/createArticle", async (req, res) => {
             article.slug,
             article.excerpt,
             article.content,
-            randomImageText,
+            article.image,
             article.category,
             currentDate,
             0
