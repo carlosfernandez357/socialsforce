@@ -383,6 +383,47 @@ app.get("/category/:category", async (req, res) => {
 
 
 
+app.get("/search", async (req, res) => {
+
+    const query = (req.query.q || "").trim();
+
+    if (!query) {
+        return res.render("search", {
+            query: "",
+            results: []
+        });
+    }
+
+    const booleanQuery = query
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(word => `+${word}`)
+        .join(" ");
+
+    const [results] = await db.query(`
+        SELECT *,
+            MATCH(title, excerpt, search_text)
+            AGAINST(? IN BOOLEAN MODE) AS score
+        FROM posts
+        WHERE MATCH(title, excerpt, search_text)
+            AGAINST(? IN BOOLEAN MODE)
+        ORDER BY score DESC, created_at DESC
+        LIMIT 50
+    `, [
+        booleanQuery,
+        booleanQuery
+    ]);
+
+    res.render("search", {
+        query,
+        results
+    });
+
+});
+
+
+
+
 
 async function generateSitemap(db) {
 

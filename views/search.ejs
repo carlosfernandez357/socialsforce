@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>Search - SocialsForce</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+
+<%- include("partials/header") %>
+
+<main class="search-page">
+
+    <div class="content-container">
+
+        <h1>
+            Search
+        </h1>
+
+        <form action="/search" method="GET">
+
+            <input
+                type="text"
+                name="q"
+                value="<%= query %>"
+                placeholder="Search news..."
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
+
+        <br>
+
+        <% if(query){ %>
+
+            <p>
+                Results for:
+                <strong><%= query %></strong>
+            </p>
+
+        <% } %>
+
+        <% if(results.length === 0){ %>
+
+            <p>
+                No results found.
+            </p>
+
+        <% } %>
+
+        <div class="latest-posts-list">
+
+            <% results.forEach(post => { %>
+
+                <article class="horizontal-post-card">
+
+                    <a
+                        href="/article/<%= post.slug %>"
+                        class="horizontal-post-link"
+                    >
+
+                        <img
+                            src="<%= post.image %>"
+                            alt="<%= post.title %>"
+                            class="horizontal-post-image"
+                        >
+
+                        <div class="horizontal-post-content">
+
+                            <span class="post-category">
+                                <%= post.category %>
+                            </span>
+
+                            <h2 class="post-title">
+                                <%= post.title %>
+                            </h2>
+
+                            <p class="post-summary">
+                                <%= post.excerpt %>
+                            </p>
+
+                        </div>
+
+                    </a>
+
+                </article>
+
+            <% }) %>
+
+        </div>
+
+    </div>
+
+</main>
+
+<%- include("partials/footer") %>
+
+</body>
+</html>
