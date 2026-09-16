@@ -542,7 +542,7 @@ app.get("/api/extract", async (req, res) => {
         const url = req.query.url;
 
         if (!url) {
-            return res.status(400).json({
+            return res.status(200).json({
                 error: "Falta el parámetro url"
             });
         }
@@ -554,7 +554,7 @@ app.get("/api/extract", async (req, res) => {
     } catch (error) {
         console.error(error);
 
-        res.status(500).json({
+        res.status(200).json({
             error: "No se pudo extraer la página",
             message: error.message
         });
