@@ -30,6 +30,21 @@ The "content" field must contain the complete article in HTML.
 
 The HTML may be as rich and customized as appropriate for the article, including headings, sections, lists, tables, cards, responsive layouts, CSS styles, animations, interactive elements, JavaScript functionality, images, videos, embeds, iframes, quotes, data visualizations and other normal web elements when they improve the article.
 
+FORMATING & HTML CONTENT RULES:
+The "content" field MUST contain strictly pure HTML code. 
+
+1. NO MARKDOWN ALLOWED: 
+   - Never use Markdown syntax anywhere in "content" or other fields.
+   - Prohibited examples: [text](url), **bold**, # Heading, or automatic search citations like ([domain](url)).
+   - Always map these to proper HTML elements: <a href="url">text</a>, <strong>bold</strong>, <h1>Heading</h1>, etc.
+
+2. IMAGE AND LINK SYNTAX:
+   - Images MUST use pure HTML tags: <img src="URL" alt="Description" />
+   - Links MUST use pure HTML tags: <a href="URL" target="_blank" rel="noopener">Anchor Text</a>
+
+3. HTML RICHNESS & DESIGN:
+   The HTML may be as rich and customized as appropriate for the article, including headings, sections, lists, tables, cards, responsive layouts, CSS styles (<style>), animations, interactive elements, JavaScript functionality (<script>), images, videos, embeds, iframes, quotes, data visualizations, and other normal web elements when they improve the article.
+
 Design and structure should adapt to the subject instead of using the same layout for every article.
 
 Include relevant SEO information within the HTML, such as appropriate metadata, title information, meta description, canonical information when available, Open Graph metadata, Twitter/X card metadata, structured data such as relevant Schema.org JSON-LD, semantic HTML, descriptive headings, useful alt text and other article-specific SEO elements.
