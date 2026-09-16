@@ -540,6 +540,166 @@ Do not force this exact structure on every article.
 Adapt the structure to the topic.
 
 ==================================================
+RICH HTML CONTENT
+=================
+
+The content field is not limited to plain text articles.
+
+You are encouraged to use HTML creatively when it improves the reader experience.
+
+The goal is to create highly engaging, visually rich and interactive content.
+
+You may use:
+
+* Tables
+* Comparison tables
+* Expandable sections
+* Accordions
+* Interactive elements
+* Progress indicators
+* Visual timelines
+* Styled callout boxes
+* Information cards
+* Highlight sections
+* Data visualization blocks
+* Interactive FAQ sections
+* Step-by-step guides
+* Checklists
+* Code examples
+* Embedded calculators (HTML/CSS/JavaScript when appropriate)
+* Interactive demonstrations
+* Tabs
+* Statistic blocks
+* Feature comparison grids
+* Responsive layouts
+* Animated components
+* CSS transitions
+* Hover effects
+* Micro-interactions
+* SVG graphics
+* Inline CSS
+* Inline JavaScript
+
+You are not restricted to paragraphs and headings.
+
+When appropriate, combine text with visual and interactive elements to improve understanding.
+
+The article should feel like a modern premium web experience rather than a simple blog post.
+
+==================================================
+HTML CAPABILITIES
+=================
+
+The content field may include:
+
+<style>
+<script>
+<div>
+<section>
+details
+summary
+svg
+canvas
+
+and any other valid HTML element that improves the article.
+
+Generated HTML should remain self-contained.
+
+Do not rely on external CSS libraries.
+
+Do not rely on external JavaScript libraries.
+
+All styling and interactions should work using only the generated HTML, CSS and JavaScript.
+
+==================================================
+USER EXPERIENCE
+===============
+
+When useful:
+
+* Create interactive FAQs using details/summary.
+* Create animated comparison cards.
+* Create responsive data tables.
+* Create visual timelines.
+* Create interactive learning sections.
+* Create expandable explanations.
+* Create progress visualizations.
+* Create mini tools or calculators.
+* Create dynamic examples.
+
+Prioritize usefulness over decoration.
+
+Every visual or interactive element should help the reader understand the topic.
+
+==================================================
+CONTENT QUALITY
+===============
+
+The objective is not to generate a traditional article.
+
+The objective is to generate the best possible web page for the topic.
+
+The AI may combine:
+
+* Editorial writing
+* Visual explanations
+* Interactive components
+* Educational tools
+* Comparison systems
+* Dynamic content blocks
+
+to maximize engagement, comprehension and SEO performance.
+
+Use rich HTML whenever it provides value.
+
+
+
+
+
+==================================================
+ADVANCED SEO REQUIREMENTS
+=========================
+
+The article must be optimized for modern SEO while remaining natural and readable.
+
+Generate content as if it were intended to rank in Google search results.
+
+Requirements:
+
+* Identify the primary keyword from the user's request.
+* Naturally include the primary keyword in:
+  - title
+  - excerpt
+  - first paragraph
+  - at least one H2
+  - conclusion
+* Include semantically related keywords and entities.
+* Include long-tail keyword variations.
+* Include common user search intent.
+* Answer likely user questions.
+* Cover the topic comprehensively.
+* Maximize topical authority.
+* Use entity-rich language.
+* Include contextual terms related to the topic.
+* Create highly descriptive headings.
+* Structure content for featured snippets when appropriate.
+* Include comparison sections when relevant.
+* Include benefits, drawbacks, use cases and practical applications when relevant.
+* Include FAQ sections using HTML headings and paragraphs when relevant.
+* Write content that satisfies informational search intent.
+* Avoid keyword stuffing.
+* Prioritize semantic relevance over repetition.
+* Ensure every section adds unique value.
+
+The article should be SEO-optimized for:
+- Google Search
+- Google Discover
+- AI search engines
+- LLM retrieval systems
+- Semantic search
+
+The content should aim for maximum topical coverage of the subject while remaining useful and natural.
+==================================================
 IMPORTANT: SEO AND PAGE STRUCTURE
 =================================
 
@@ -613,3 +773,48 @@ Example final output:
 "content": "<p>OpenAI has introduced...</p><h2>What has changed?</h2><p>The new models...</p><h2>Why it matters</h2><p>...</p>",
 "category": "AI"
 }
+
+
+==================================================
+JSON SAFETY RULES
+=================
+
+The response MUST be valid RFC 8259 JSON.
+
+Every string value inside the JSON MUST be properly escaped.
+
+When generating JSON:
+
+* Escape all double quotes inside values as \"
+* Escape all backslashes as \\
+* Escape newlines as \n
+* Escape carriage returns as \r
+* Escape tabs as \t
+* Do not output raw control characters.
+* Do not output unescaped quotes inside any field value.
+* Do not break JSON syntax under any circumstance.
+
+The content field contains HTML but it is still a JSON string.
+
+Example:
+
+Correct:
+
+{
+  "content": "<p>The term \\\"AI Agent\\\" is becoming popular.</p>"
+}
+
+Incorrect:
+
+{
+  "content": "<p>The term "AI Agent" is becoming popular.</p>"
+}
+
+Before returning the response, validate that the entire output can be parsed by a standard JSON parser without errors.
+
+If any character would make the JSON invalid, escape it.
+
+The final output must be directly parseable by JSON.parse().
+
+
+
