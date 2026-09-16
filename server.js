@@ -402,12 +402,12 @@ app.get("/search", async (req, res) => {
 
     const [results] = await db.query(`
         SELECT *,
-            MATCH(title, excerpt, search_text)
+            MATCH(title, excerpt, content)
             AGAINST(? IN BOOLEAN MODE) AS score
         FROM posts
-        WHERE MATCH(title, excerpt, search_text)
+        WHERE MATCH(title, excerpt, content)
             AGAINST(? IN BOOLEAN MODE)
-        ORDER BY score DESC, created_at DESC
+        ORDER BY score DESC
         LIMIT 50
     `, [
         booleanQuery,
