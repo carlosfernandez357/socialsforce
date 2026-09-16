@@ -119,16 +119,7 @@
 
 </head>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    // Convierte el contenido del artículo a HTML real
-    const articleContainer = document.querySelector('.content-container');
-    if (articleContainer) {
-      articleContainer.innerHTML = marked.parse(articleContainer.innerHTML);
-    }
-  });
-</script>
+
 
 <body>
 
@@ -366,7 +357,16 @@
 
     <script src="/js/main.js"></script>
 
-
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Convierte el contenido del artículo a HTML real
+    const articleContainer = document.querySelector('.content-container');
+    if (articleContainer) {
+      articleContainer.innerHTML = marked.parse(articleContainer.innerHTML);
+    }
+  });
+</script>
 </body>
 
 </html>
