@@ -394,10 +394,15 @@ app.get("/search", async (req, res) => {
         });
     }
 
-    const booleanQuery = query
+    const normalizedQuery = query
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    const booleanQuery = normalizedQuery
         .split(/\s+/)
         .filter(Boolean)
-        .map(word => `+${word}`)
+        .map(word => `+${word}*`)
         .join(" ");
 
     const [results] = await db.query(`
@@ -407,7 +412,7 @@ app.get("/search", async (req, res) => {
         FROM posts
         WHERE MATCH(title, excerpt, content)
             AGAINST(? IN BOOLEAN MODE)
-        ORDER BY score DESC
+        ORDER BY score DESC, created_at DESC
         LIMIT 50
     `, [
         booleanQuery,
