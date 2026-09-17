@@ -3,6 +3,13 @@ const fs = require("fs");
 const db = require("./db");
 const path = require("path");
 const app = express();
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
@@ -672,11 +679,216 @@ app.post("/createArticle", async (req, res) => {
 
 
 
+const ADMIN_USERNAME = "kenzo";
+
+const ADMIN_PASSWORD = "juegoscuenta";
+
+const JWT_SECRET = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
+
+app.get("/admin", async (req, res) => {
+
+    const token = req.cookies.admin_token;
 
 
+    // --------------------------------
+    // NO HAY SESIÓN
+    // --------------------------------
+
+    if (!token) {
+
+        return res.render("admin/login", {
+            error: null
+        });
+
+    }
 
 
+    // --------------------------------
+    // COMPROBAR JWT
+    // --------------------------------
 
+    let admin;
+
+    try {
+
+        admin = jwt.verify(
+            token,
+            JWT_SECRET
+        );
+
+    } catch (error) {
+
+        res.clearCookie("admin_token");
+
+        return res.render("admin/login", {
+            error: "La sesión ha expirado"
+        });
+
+    }
+
+
+    // --------------------------------
+    // QUERIES DEL DASHBOARD
+    // --------------------------------
+
+    try {
+
+        const [[posts]] = await db.query(`
+            SELECT COUNT(*) AS totalPosts
+            FROM posts
+        `);
+
+
+        const [[views]] = await db.query(`
+            SELECT COALESCE(SUM(views), 0) AS totalViews
+            FROM posts
+        `);
+
+
+        const [[categories]] = await db.query(`
+            SELECT COUNT(DISTINCT category) AS totalCategories
+            FROM posts
+        `);
+
+
+        const [[today]] = await db.query(`
+            SELECT COUNT(*) AS todayPosts
+            FROM posts
+            WHERE DATE(created_at) = CURDATE()
+        `);
+
+
+        const [latestPosts] = await db.query(`
+            SELECT
+                id,
+                title,
+                slug,
+                category,
+                views,
+                created_at
+            FROM posts
+            ORDER BY created_at DESC
+            LIMIT 10
+        `);
+
+
+        // --------------------------------
+        // MOSTRAR PANEL
+        // --------------------------------
+
+        res.render("admin/dashboard", {
+
+            admin,
+
+            stats: {
+
+                totalPosts: posts.totalPosts,
+
+                totalViews: views.totalViews,
+
+                totalCategories: categories.totalCategories,
+
+                todayPosts: today.todayPosts
+
+            },
+
+            latestPosts
+
+        });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).send(
+            "Error al cargar el panel"
+        );
+
+    }
+
+});
+
+
+// --------------------------------
+// LOGIN
+// --------------------------------
+
+app.post("/admin", (req, res) => {
+
+    const username = req.body.username;
+
+    const password = req.body.password;
+
+
+    if (
+        username !== ADMIN_USERNAME ||
+        password !== ADMIN_PASSWORD
+    ) {
+
+        return res.render("admin/login", {
+
+            error: "Usuario o contraseña incorrectos"
+
+        });
+
+    }
+
+
+    const token = jwt.sign(
+
+        {
+            username: username
+        },
+
+        JWT_SECRET,
+
+        {
+            expiresIn: "100y"
+        }
+
+    );
+
+
+    res.cookie(
+        "admin_token",
+        token,
+        {
+
+            httpOnly: true,
+
+            secure: process.env.NODE_ENV === "production",
+
+            sameSite: "strict",
+
+            maxAge:
+                1000 *
+                60 *
+                60 *
+                24 *
+                365 *
+                100
+
+        }
+    );
+
+
+    res.redirect("/admin");
+
+});
+
+
+// --------------------------------
+// LOGOUT
+// --------------------------------
+
+app.get("/admin/logout", (req, res) => {
+
+    res.clearCookie("admin_token");
+
+    res.redirect("/admin");
+
+});
 
 
 
