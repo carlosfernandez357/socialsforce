@@ -1,331 +1,439 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | SocialsForce</title>
-    <link rel="stylesheet" href="/css/admin.css">
-</head>
-
-<body>
-
-    <%- include("partials/header") %>
-
-    <div class="admin-layout">
-
-        <%- include("partials/sidebar") %>
-
-        <main class="admin-main">
-
-            <div class="admin-page-header">
-                <div>
-                    <h1>Dashboard</h1>
-                    <p>Overview of your SocialsForce platform.</p>
-                </div>
-            </div>
-
-
-            <section class="stats-grid">
-
-                <div class="stat-card">
-                    <span class="stat-label">Total Views</span>
-                    <strong class="stat-value"><%= stats.totalViews.toLocaleString() %></strong>
-                    <span class="stat-description">Total article views</span>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Articles</span>
-                    <strong class="stat-value"><%= stats.totalPosts.toLocaleString() %></strong>
-                    <span class="stat-description">Total articles</span>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Categories</span>
-                    <strong class="stat-value"><%= stats.totalCategories.toLocaleString() %></strong>
-                    <span class="stat-description">Categories used</span>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Published Today</span>
-                    <strong class="stat-value"><%= stats.todayPosts.toLocaleString() %></strong>
-                    <span class="stat-description">Articles published today</span>
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>Latest articles</h2>
-                        <p>Recently published content.</p>
-                    </div>
-
-                    <a href="/admin/articles" class="section-link">
-                        View all
-                    </a>
-                </div>
-
-                <div class="table-container">
-
-                    <table class="admin-table">
-
-                        <thead>
-                            <tr>
-                                <th>Article</th>
-                                <th>Category</th>
-                                <th>Views</th>
-                                <th>Published</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <% latestPosts.forEach(post => { %>
-
-                                <tr>
-
-                                    <td>
-                                        <div class="article-table-title">
-                                            <strong><%= post.title %></strong>
-                                            <span>/article/<%= post.slug %></span>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <span class="category-badge">
-                                            <%= post.category || "Uncategorized" %>
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <%= post.views.toLocaleString() %>
-                                    </td>
-
-                                    <td>
-                                        <%= post.published_at ? new Date(post.published_at).toLocaleDateString("en-GB") : "-" %>
-                                    </td>
-
-                                </tr>
-
-                            <% }) %>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>Content overview</h2>
-                        <p>Information calculated directly from your articles.</p>
-                    </div>
-                </div>
-
-                <div class="status-grid">
-
-                    <div class="status-card">
-                        <span>Total content views</span>
-                        <strong><%= stats.totalViews.toLocaleString() %></strong>
-                        <small>Across all articles</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Average views</span>
-                        <strong><%= stats.totalPosts > 0 ? Math.round(stats.totalViews / stats.totalPosts).toLocaleString() : 0 %></strong>
-                        <small>Views per article</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Articles today</span>
-                        <strong><%= stats.todayPosts.toLocaleString() %></strong>
-                        <small>Created today</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Categories</span>
-                        <strong><%= stats.totalCategories.toLocaleString() %></strong>
-                        <small>Currently in use</small>
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>Top articles</h2>
-                        <p>Articles with the highest number of views.</p>
-                    </div>
-                </div>
-
-                <div class="table-container">
-
-                    <table class="admin-table">
-
-                        <thead>
-                            <tr>
-                                <th>Article</th>
-                                <th>Category</th>
-                                <th>Views</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            <% topPosts.forEach(post => { %>
-
-                                <tr>
-
-                                    <td>
-                                        <div class="article-table-title">
-                                            <strong><%= post.title %></strong>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <span class="category-badge">
-                                            <%= post.category || "Uncategorized" %>
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <%= post.views.toLocaleString() %>
-                                    </td>
-
-                                </tr>
-
-                            <% }) %>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>Categories</h2>
-                        <p>Article distribution by category.</p>
-                    </div>
-                </div>
-
-                <div class="status-grid">
-
-                    <% categoryStats.forEach(category => { %>
-
-                        <div class="status-card">
-                            <span><%= category.category || "Uncategorized" %></span>
-                            <strong><%= category.total %></strong>
-                            <small><%= category.views.toLocaleString() %> total views</small>
-                        </div>
-
-                    <% }) %>
-
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>SEO status</h2>
-                        <p>These values will be connected to Google Search Console later.</p>
-                    </div>
-                </div>
-
-                <div class="status-grid">
-
-                    <div class="status-card">
-                        <span>Indexed</span>
-                        <strong>—</strong>
-                        <small>Not connected yet</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Pending</span>
-                        <strong>—</strong>
-                        <small>Not connected yet</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Errors</span>
-                        <strong>—</strong>
-                        <small>Not connected yet</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Sitemap</span>
-                        <strong>Active</strong>
-                        <small>Generated by SocialsForce</small>
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <section class="admin-section">
-
-                <div class="section-header">
-                    <div>
-                        <h2>System</h2>
-                        <p>Current SocialsForce system information.</p>
-                    </div>
-                </div>
-
-                <div class="status-grid">
-
-                    <div class="status-card">
-                        <span>Database</span>
-                        <strong class="status-success">Online</strong>
-                        <small>MySQL connection</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Articles</span>
-                        <strong><%= stats.totalPosts.toLocaleString() %></strong>
-                        <small>Stored in database</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>Views</span>
-                        <strong><%= stats.totalViews.toLocaleString() %></strong>
-                        <small>Stored in database</small>
-                    </div>
-
-                    <div class="status-card">
-                        <span>AI Generator</span>
-                        <strong>Ready</strong>
-                        <small>API endpoint available</small>
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
+<%- include("header") %>
+<%- include("sidebar") %>
+
+<main class="admin-main">
+
+    <div class="admin-page-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Overview of your SocialsForce platform.</p>
+        </div>
+
+        <a href="/admin/create-article" class="admin-primary-button">
+            + Create article
+        </a>
+    </div>
+
+    <!-- Statistics -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+            <span class="admin-stat-label">Total views</span>
+            <strong class="admin-stat-value">
+                <%= Number(stats.totalViews || 0).toLocaleString() %>
+            </strong>
+            <span class="admin-stat-description">All article views</span>
+        </div>
+
+        <div class="admin-stat-card">
+            <span class="admin-stat-label">Total articles</span>
+            <strong class="admin-stat-value">
+                <%= stats.totalPosts || 0 %>
+            </strong>
+            <span class="admin-stat-description">Published articles</span>
+        </div>
+
+        <div class="admin-stat-card">
+            <span class="admin-stat-label">Categories</span>
+            <strong class="admin-stat-value">
+                <%= stats.totalCategories || 0 %>
+            </strong>
+            <span class="admin-stat-description">Active categories</span>
+        </div>
+
+        <div class="admin-stat-card">
+            <span class="admin-stat-label">Published today</span>
+            <strong class="admin-stat-value">
+                <%= stats.todayPosts || 0 %>
+            </strong>
+            <span class="admin-stat-description">Articles published today</span>
+        </div>
 
     </div>
 
-    <%- include("partials/footer") %>
+    <!-- Main dashboard -->
 
-</body>
-</html>
+    <div class="admin-dashboard-grid">
+
+        <!-- Latest posts -->
+
+        <section class="admin-card admin-dashboard-articles">
+
+            <div class="admin-card-header">
+                <div>
+                    <h2>Latest posts</h2>
+                    <p>Recently published articles.</p>
+                </div>
+
+                <a href="/admin/articles" class="admin-card-link">
+                    View all
+                </a>
+            </div>
+
+            <div class="admin-article-list">
+
+                <% latestPosts.forEach(post => { %>
+
+                    <div class="admin-article-row">
+
+                        <div class="admin-article-main">
+
+                            <div class="admin-article-thumbnail">
+
+                                <% if (post.image) { %>
+
+                                    <img
+                                        src="<%= post.image %>"
+                                        alt="<%= post.title %>"
+                                    >
+
+                                <% } else { %>
+
+                                    <span>SF</span>
+
+                                <% } %>
+
+                            </div>
+
+                            <div class="admin-article-details">
+
+                                <a
+                                    href="/article/<%= post.slug %>"
+                                    target="_blank"
+                                    class="admin-article-title"
+                                >
+                                    <%= post.title %>
+                                </a>
+
+                                <div class="admin-article-meta">
+
+                                    <span>
+                                        <%= post.category || "Uncategorized" %>
+                                    </span>
+
+                                    <span>•</span>
+
+                                    <span>
+                                        <%= Number(post.views || 0).toLocaleString() %> views
+                                    </span>
+
+                                    <% if (post.published_at) { %>
+
+                                        <span>•</span>
+
+                                        <span>
+                                            <%= new Date(post.published_at).toLocaleDateString("en-GB") %>
+                                        </span>
+
+                                    <% } %>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="admin-article-status">
+
+                            <% if (post.indexed === true) { %>
+
+                                <span class="index-status indexed">
+                                    <span></span>
+                                    Indexed
+                                </span>
+
+                            <% } else { %>
+
+                                <span class="index-status not-indexed">
+                                    <span></span>
+                                    Not indexed
+                                </span>
+
+                            <% } %>
+
+                        </div>
+
+                        <div class="admin-article-actions">
+
+                            <a
+                                href="/article/<%= post.slug %>"
+                                target="_blank"
+                                class="admin-action-button"
+                            >
+                                Visit
+                            </a>
+
+                            <form
+                                action="/admin/articles/<%= post.id %>/delete"
+                                method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this article?');"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="admin-action-button delete"
+                                >
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                <% }) %>
+
+                <% if (latestPosts.length === 0) { %>
+
+                    <div class="admin-empty">
+                        No articles found.
+                    </div>
+
+                <% } %>
+
+            </div>
+
+        </section>
+
+        <!-- Top posts -->
+
+        <section class="admin-card">
+
+            <div class="admin-card-header">
+
+                <div>
+                    <h2>Top posts</h2>
+                    <p>Most viewed articles.</p>
+                </div>
+
+            </div>
+
+            <div class="admin-top-posts">
+
+                <% topPosts.forEach((post, index) => { %>
+
+                    <div class="admin-top-post">
+
+                        <div class="admin-top-post-number">
+                            <%= index + 1 %>
+                        </div>
+
+                        <div class="admin-top-post-content">
+
+                            <a
+                                href="/article/<%= post.slug %>"
+                                target="_blank"
+                            >
+                                <%= post.title %>
+                            </a>
+
+                            <span>
+                                <%= Number(post.views || 0).toLocaleString() %> views
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                <% }) %>
+
+                <% if (topPosts.length === 0) { %>
+
+                    <div class="admin-empty">
+                        No articles found.
+                    </div>
+
+                <% } %>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Categories -->
+
+    <section class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+                <h2>Categories</h2>
+                <p>Article distribution and views by category.</p>
+            </div>
+
+        </div>
+
+        <div class="admin-category-grid">
+
+            <% categoryStats.forEach(category => { %>
+
+                <% const categoryPercentage = stats.totalPosts
+                    ? (Number(category.total) / Number(stats.totalPosts)) * 100
+                    : 0;
+                %>
+
+                <div class="admin-category-card">
+
+                    <div class="admin-category-header">
+
+                        <strong>
+                            <%= category.category %>
+                        </strong>
+
+                        <span>
+                            <%= category.total %> articles
+                        </span>
+
+                    </div>
+
+                    <div class="admin-category-bar">
+
+                        <div
+                            class="admin-category-bar-fill"
+                            style="width: <%= categoryPercentage %>%"
+                        ></div>
+
+                    </div>
+
+                    <div class="admin-category-footer">
+
+                        <span>
+                            <%= Number(category.views || 0).toLocaleString() %> views
+                        </span>
+
+                        <span>
+                            <%= Math.round(categoryPercentage) %>%
+                        </span>
+
+                    </div>
+
+                </div>
+
+            <% }) %>
+
+            <% if (categoryStats.length === 0) { %>
+
+                <div class="admin-empty">
+                    No category data available.
+                </div>
+
+            <% } %>
+
+        </div>
+
+    </section>
+
+    <!-- Platform status -->
+
+    <div class="admin-dashboard-grid">
+
+        <!-- Search engine -->
+
+        <section class="admin-card">
+
+            <div class="admin-card-header">
+
+                <div>
+                    <h2>Search engine status</h2>
+                    <p>Search Console integration status.</p>
+                </div>
+
+            </div>
+
+            <div class="admin-status-list">
+
+                <div class="admin-status-row">
+                    <span>Indexed</span>
+                    <strong class="admin-status-pending">—</strong>
+                </div>
+
+                <div class="admin-status-row">
+                    <span>Pending</span>
+                    <strong class="admin-status-pending">—</strong>
+                </div>
+
+                <div class="admin-status-row">
+                    <span>Errors</span>
+                    <strong class="admin-status-pending">—</strong>
+                </div>
+
+                <div class="admin-status-row">
+                    <span>Sitemap</span>
+                    <strong class="admin-status-active">Active</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- AI activity -->
+
+        <section class="admin-card">
+
+            <div class="admin-card-header">
+
+                <div>
+                    <h2>AI activity</h2>
+                    <p>AI-generated content activity.</p>
+                </div>
+
+            </div>
+
+            <div class="admin-placeholder">
+
+                <span class="admin-placeholder-icon">
+                    AI
+                </span>
+
+                <strong>
+                    No AI activity data yet
+                </strong>
+
+                <p>
+                    AI generation statistics will appear here once the
+                    content generation system is connected.
+                </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Alerts -->
+
+    <section class="admin-card admin-alert-card">
+
+        <div class="admin-card-header">
+
+            <div>
+                <h2>Alerts</h2>
+                <p>Important platform notifications.</p>
+            </div>
+
+        </div>
+
+        <div class="admin-alert-empty">
+
+            <span>✓</span>
+
+            <div>
+                <strong>
+                    No active alerts
+                </strong>
+
+                <p>
+                    Everything looks good right now.
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<%- include("footer") %>

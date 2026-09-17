@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles | SocialsForce</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+    <%- include("header") %>
+
+    <div class="admin-layout">
+
+        <%- include("sidebar") %>
+
+        <main class="admin-main">
+
+            <div class="admin-page-header">
+                <div>
+                    <h1>Articles</h1>
+                    <p>Manage your published SocialsForce articles.</p>
+                </div>
+
+                <a href="/admin/create-article" class="admin-primary-button">
+                    Create article
+                </a>
+            </div>
+
+
+            <section class="admin-section">
+
+                <div class="table-container">
+
+                    <table class="admin-table articles-table">
+
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Category</th>
+                                <th>Views</th>
+                                <th>Indexing</th>
+                                <th>Published</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <% articles.forEach(post => { %>
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="admin-article-info">
+
+                                            <div class="admin-article-image">
+
+                                                <% if (post.image) { %>
+
+                                                    <img
+                                                        src="<%= post.image %>"
+                                                        alt="<%= post.title %>"
+                                                    >
+
+                                                <% } else { %>
+
+                                                    <div class="admin-article-no-image">
+                                                        No image
+                                                    </div>
+
+                                                <% } %>
+
+                                            </div>
+
+
+                                            <div class="article-table-title">
+
+                                                <strong>
+                                                    <%= post.title %>
+                                                </strong>
+
+                                                <span>
+                                                    /article/<%= post.slug %>
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="category-badge">
+                                            <%= post.category || "Uncategorized" %>
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+                                        <%= Number(post.views || 0).toLocaleString() %>
+                                    </td>
+
+
+                                    <td>
+
+                                        <% if (post.indexed === true) { %>
+
+                                            <span class="index-status index-status-indexed">
+                                                <span></span>
+                                                Indexed
+                                            </span>
+
+                                        <% } else if (post.indexed === false) { %>
+
+                                            <span class="index-status index-status-not-indexed">
+                                                <span></span>
+                                                Not indexed
+                                            </span>
+
+                                        <% } else { %>
+
+                                            <span class="index-status index-status-unknown">
+                                                <span></span>
+                                                Unknown
+                                            </span>
+
+                                        <% } %>
+
+                                    </td>
+
+
+                                    <td>
+                                        <%= post.published_at ? new Date(post.published_at).toLocaleDateString("en-GB") : "-" %>
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="article-actions">
+
+                                            <a
+                                                href="/article/<%= post.slug %>"
+                                                target="_blank"
+                                                class="article-action-button"
+                                            >
+                                                Visit
+                                            </a>
+
+
+                                            <form
+                                                action="/admin/articles/<%= post.id %>/delete"
+                                                method="POST"
+                                                onsubmit="return confirm('Are you sure you want to delete this article? This action cannot be undone.')"
+                                            >
+
+                                                <button
+                                                    type="submit"
+                                                    class="article-action-button article-delete-button"
+                                                >
+                                                    Delete
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            <% }) %>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <%- include("footer") %>
+
+</body>
+</html>

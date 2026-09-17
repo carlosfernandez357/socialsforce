@@ -845,6 +845,66 @@ app.get("/admin/logout", (req, res) => {
 });
 
 
+app.get("/admin/articles", async (req, res) => {
+    const token = req.cookies.admin_token;
+
+    if (!token) {
+        return res.redirect("/admin");
+    }
+
+    try {
+        jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+        res.clearCookie("admin_token");
+        return res.redirect("/admin");
+    }
+
+    try {
+        const [articles] = await db.query(`
+            SELECT id, title, slug, category, image, views, published_at
+            FROM posts
+            ORDER BY published_at DESC
+        `);
+
+        res.render("admin/articles", {articles});
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al cargar los artículos");
+    }
+});
+
+app.post("/admin/articles/:id/delete", async (req, res) => {
+    const token = req.cookies.admin_token;
+
+    if (!token) {
+        return res.redirect("/admin");
+    }
+
+    try {
+        jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+        res.clearCookie("admin_token");
+        return res.redirect("/admin");
+    }
+
+    try {
+        await db.query(`
+            DELETE FROM posts
+            WHERE id = ?
+        `, [req.params.id]);
+
+        res.redirect("/admin/articles");
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al borrar el artículo");
+    }
+});
+
+
+
+
 
 
 
