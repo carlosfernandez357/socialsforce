@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | SocialsForce</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+    <%- include("../../admin-partials/header") %>
+
+    <div class="admin-layout">
+
+        <%- include("../../admin-partials/sidebar") %>
+
+        <main class="admin-main">
+
+            <div class="admin-page-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Overview of your SocialsForce platform.</p>
+                </div>
+            </div>
+
+
+            <!-- REAL STATISTICS -->
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <span class="stat-label">Total Views</span>
+                    <strong class="stat-value"><%= stats.totalViews.toLocaleString() %></strong>
+                    <span class="stat-description">All article views</span>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-label">Articles</span>
+                    <strong class="stat-value"><%= stats.totalPosts.toLocaleString() %></strong>
+                    <span class="stat-description">Total published articles</span>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-label">Categories</span>
+                    <strong class="stat-value"><%= stats.totalCategories.toLocaleString() %></strong>
+                    <span class="stat-description">Active categories</span>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-label">Published Today</span>
+                    <strong class="stat-value"><%= stats.todayPosts.toLocaleString() %></strong>
+                    <span class="stat-description">Articles created today</span>
+                </div>
+
+            </section>
+
+
+            <!-- TRAFFIC -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Traffic</h2>
+                        <p>Article views over time.</p>
+                    </div>
+
+                    <select class="admin-select">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                    </select>
+                </div>
+
+                <div class="chart-placeholder">
+                    <div class="chart-placeholder-content">
+                        <span>Traffic chart</span>
+                        <small>Coming soon</small>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- SEO -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Search engine status</h2>
+                        <p>Google indexing and sitemap information.</p>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+
+                    <div class="status-card">
+                        <span>Indexed</span>
+                        <strong>823</strong>
+                        <small>Pages indexed by Google</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Pending</span>
+                        <strong>12</strong>
+                        <small>Pages waiting for indexing</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Errors</span>
+                        <strong>3</strong>
+                        <small>Pages with indexing issues</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Sitemap</span>
+                        <strong class="status-success">Active</strong>
+                        <small>Updated 2 minutes ago</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- LATEST ARTICLES -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Latest articles</h2>
+                        <p>Recently created content.</p>
+                    </div>
+
+                    <a href="/admin/articles" class="section-link">
+                        View all
+                    </a>
+                </div>
+
+                <div class="table-container">
+
+                    <table class="admin-table">
+
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Category</th>
+                                <th>Views</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <% latestPosts.forEach(post => { %>
+
+                                <tr>
+
+                                    <td>
+                                        <div class="article-table-title">
+                                            <strong><%= post.title %></strong>
+                                            <span>/article/<%= post.slug %></span>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="category-badge">
+                                            <%= post.category || "Uncategorized" %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <%= post.views.toLocaleString() %>
+                                    </td>
+
+                                    <td>
+                                        <%= new Date(post.created_at).toLocaleDateString("en-GB") %>
+                                    </td>
+
+                                </tr>
+
+                            <% }) %>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- CONTENT PERFORMANCE -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Content performance</h2>
+                        <p>Useful information about your content.</p>
+                    </div>
+                </div>
+
+                <div class="performance-grid">
+
+                    <div class="performance-card">
+                        <span>Top article</span>
+                        <strong>How AI is changing...</strong>
+                        <small>12,482 views</small>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>Top category</span>
+                        <strong>Artificial Intelligence</strong>
+                        <small>42% of total views</small>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>Average views</span>
+                        <strong>1,284</strong>
+                        <small>Per article</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- AI ACTIVITY -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>AI activity</h2>
+                        <p>Article generation and automation.</p>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+
+                    <div class="status-card">
+                        <span>Generated today</span>
+                        <strong>24</strong>
+                        <small>AI generated articles</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Success rate</span>
+                        <strong>96.4%</strong>
+                        <small>Successful generations</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Errors</span>
+                        <strong>2</strong>
+                        <small>Failed generations</small>
+                    </div>
+
+                    <div class="status-card">
+                        <span>Last generation</span>
+                        <strong>8 min</strong>
+                        <small>Time since last article</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ALERTS -->
+
+            <section class="admin-section">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Alerts</h2>
+                        <p>Things that may require attention.</p>
+                    </div>
+                </div>
+
+                <div class="alerts-list">
+
+                    <div class="alert-item alert-warning">
+                        <div>
+                            <strong>12 articles pending indexing</strong>
+                            <span>Some recently published articles have not been indexed yet.</span>
+                        </div>
+                        <a href="#">View</a>
+                    </div>
+
+                    <div class="alert-item alert-warning">
+                        <div>
+                            <strong>3 indexing errors</strong>
+                            <span>Google reported indexing problems.</span>
+                        </div>
+                        <a href="#">View</a>
+                    </div>
+
+                    <div class="alert-item alert-info">
+                        <div>
+                            <strong>2 articles without images</strong>
+                            <span>Some articles are missing their main image.</span>
+                        </div>
+                        <a href="/admin/articles">View</a>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <%- include("../../admin-partials/footer") %>
+
+</body>
+</html>
