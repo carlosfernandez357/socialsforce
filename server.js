@@ -724,7 +724,7 @@ app.get("/admin", async (req, res) => {
         `);
 
         const [latestPosts] = await db.query(`
-            SELECT id, title, slug, category, views, published_at
+            SELECT id, title, slug, category, image, views, published_at
             FROM posts
             ORDER BY published_at DESC
             LIMIT 10
