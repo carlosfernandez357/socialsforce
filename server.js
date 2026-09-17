@@ -686,127 +686,81 @@ const ADMIN_PASSWORD = "juegoscuenta";
 const JWT_SECRET = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
 
 app.get("/admin", async (req, res) => {
-
     const token = req.cookies.admin_token;
 
-
-    // --------------------------------
-    // NO HAY SESIÓN
-    // --------------------------------
-
     if (!token) {
-
-        return res.render("admin/login", {
-            error: null
-        });
-
+        return res.render("admin/login", {error: null});
     }
 
-
-    // --------------------------------
-    // COMPROBAR JWT
-    // --------------------------------
-
-    let admin;
-
     try {
-
-        admin = jwt.verify(
-            token,
-            JWT_SECRET
-        );
-
+        jwt.verify(token, JWT_SECRET);
     } catch (error) {
-
         res.clearCookie("admin_token");
-
-        return res.render("admin/login", {
-            error: "La sesión ha expirado"
-        });
-
+        return res.render("admin/login", {error: "La sesión ha expirado"});
     }
 
-
-    // --------------------------------
-    // QUERIES DEL DASHBOARD
-    // --------------------------------
-
     try {
-
         const [[posts]] = await db.query(`
             SELECT COUNT(*) AS totalPosts
             FROM posts
         `);
-
 
         const [[views]] = await db.query(`
             SELECT COALESCE(SUM(views), 0) AS totalViews
             FROM posts
         `);
 
-
         const [[categories]] = await db.query(`
             SELECT COUNT(DISTINCT category) AS totalCategories
             FROM posts
+            WHERE category IS NOT NULL
         `);
-
 
         const [[today]] = await db.query(`
             SELECT COUNT(*) AS todayPosts
             FROM posts
-            WHERE DATE(created_at) = CURDATE()
+            WHERE published_at IS NOT NULL
+              AND DATE(published_at) = CURDATE()
         `);
 
-
         const [latestPosts] = await db.query(`
-            SELECT
-                id,
-                title,
-                slug,
-                category,
-                views,
-                created_at
+            SELECT id, title, slug, category, views, published_at
             FROM posts
-            ORDER BY created_at DESC
+            ORDER BY published_at DESC
             LIMIT 10
         `);
 
+        const [topPosts] = await db.query(`
+            SELECT id, title, slug, category, views
+            FROM posts
+            ORDER BY views DESC
+            LIMIT 10
+        `);
 
-        // --------------------------------
-        // MOSTRAR PANEL
-        // --------------------------------
+        const [categoryStats] = await db.query(`
+            SELECT category, COUNT(*) AS total, COALESCE(SUM(views), 0) AS views
+            FROM posts
+            WHERE category IS NOT NULL
+            GROUP BY category
+            ORDER BY total DESC
+        `);
 
         res.render("admin/dashboard", {
-
-            admin,
-
             stats: {
-
                 totalPosts: posts.totalPosts,
-
                 totalViews: views.totalViews,
-
                 totalCategories: categories.totalCategories,
-
                 todayPosts: today.todayPosts
-
             },
-
-            latestPosts
-
+            latestPosts,
+            topPosts,
+            categoryStats
         });
 
-
     } catch (error) {
-
         console.error(error);
-
-        res.status(500).send(
-            "Error al cargar el panel"
-        );
-
+        res.status(500).send("Error al cargar el dashboard");
     }
-
 });
 
 
