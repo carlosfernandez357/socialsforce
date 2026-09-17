@@ -1,0 +1,27 @@
+<footer class="admin-footer">
+
+    <div class="admin-footer-content">
+
+        <span>
+            © <%= new Date().getFullYear() %> SocialsForce
+        </span>
+
+        <span>
+            Administration panel
+        </span>
+
+    </div>
+
+</footer>
+
+
+<script>
+    const menuButton = document.getElementById("admin-menu-button");
+    const sidebar = document.getElementById("admin-sidebar");
+
+    if (menuButton && sidebar) {
+        menuButton.addEventListener("click", () => {
+            sidebar.classList.toggle("active");
+        });
+    }
+</script>
