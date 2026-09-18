@@ -20,7 +20,7 @@ app.use(express.json());
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
 
 const analyticsClient = new BetaAnalyticsDataClient({
-    keyFilename: "./google-analytics.json"
+    keyFilename: path.join(__dirname, "google-analytics.json")
 });
 
 const GA_PROPERTY_ID = "554926387";
