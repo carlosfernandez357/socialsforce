@@ -942,9 +942,7 @@ async function testGoogleAnalytics() {
             { name: "city" },
             { name: "browser" },
             { name: "operatingSystem" },
-            { name: "sessionDefaultChannelGroup" },
-            { name: "sessionSource" },
-            { name: "sessionMedium" }
+            { name: "sessionDefaultChannelGroup" }
         ],
 
         metrics: [
