@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "melodic-voice-509015-j6",
+  "private_key_id": "f2518855f324e196910964b693fb40b64fde70d5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHAWEVLAzWJnEQ\n7qBPY2rPAfI8i1rKqXKa/dHlRong00JYeLgfG0tBTspJCRHYKOkL61mmkko958Gs\n6x/zZoGzZMj1LxacM6AiY4oTdH2S/znWE+YWrCwqsIe4KUDNgTaaBq/4B/yEQLUv\nbGVR5BcKHdi9RZIY4LCXGR/J1kTebMgz+xigPQ6gxzj72+Qu6CS1T1XhIl6znsSk\n1rrb4/8rPRCJJx23RZS6PTGmpSvaxEp2k2rYp49wPTNS0odj7xTg3r/9fbaTdwe+\nXMt8gzfZQmMu6YhMly+XmfX40zQY1f9zPIn8Uiq5LwM698JO5Y/R3NbHvIwqWcgL\npdmpDxxTAgMBAAECggEAR6WkeUXpvTQL4we2qb5mVu8hclDNuEc3XrvhVMWHoG0O\n5uFXkMN33aRrSc49IXDhLoxmM4VZu130KbhhQXV3Xsn7W+K/Ji+kCJ2DuatoBoNj\nJEL3xNPp9tillFUt4o8RxHSB6C+f51GQqelBtTEEZn0GamZgyhojGdNO0ZEWLGml\nD+FRYzFYDw1nOIP1hB7ye+wGs7z63b0ftpWmJffbkpT3qaH8skxVoneR6wqXa2hY\nmK1nGFOAxEUxEPron/cNI6HMw5lEkMXK0X1HR50jw7SGCR/tEOVczRYbifyo+JCB\nY1Z0arAsPT6deIlUKIH675xoQmLmBRmcgObSlNPS4QKBgQDtv1iQyuJgpbc9J9VW\nLQ83Li52o875XNXHXvstXLDnVlRVDxnmSqizVGDnAZYetValRZ1ZyWjOJ0dg4mvI\nXsWnhwySp39SlU7pmFmNK6KiqiHVvq5jiwoxgh9fbJ9fCbZP6dYbktrhavTWCLQ5\n7DhZAwvqbVE6oFxp5GtCfFTOYwKBgQDWSJo6RhjRoPNAJmfl/K2IeYGlJEQqxmsZ\n/AguQEKUp0IhtR8aq1iEUeqb7KwpY1x7HZrxJ0KP8VlSTTR7yRyn5ksgOZ8KiT8n\n/zwOJOjV1ueYFfjqIwJsNwQ14BRsNGBtPE2vh9mIHDuwEIBkcSYQkSGrJf3RgEW3\n4ApCrjylUQKBgQDY1mUzoid4WIxYlcUI1Q4EmPU9tcenPZmpPiK+y8R5Kg6+iYho\ntv1ImhPLfXHqzh+Zm3WZF46kP8TlQ31kgbOqSQ0ZkPUaYB1aBl7e18Z8r8kuRryN\nA5onb3Ont81fg98o4bAq8/T4FXH66HNgROdbn+C1TkEAxJOk7PU67WT32wKBgAsO\nAc7h0OP3rrTvhkqqJ3Wz9wlC/rVKOTpE81MXg5fRrSq6AlnI3y8sXrMemZ8k/h9n\n3pd0VA3DAL2rN/ru3CiZS+TktBzCCd0RYNLF+rEVfistbwL9PWHB0NjKr6MJbLQV\n+VgF5SYNdtLVdxo3cCRIqHkA48BMIsyipUTdYkmRAoGAdwuQ4UcKl2XZpIX0INdC\nZiBW611pXZD001ew9YKHpv3bJFCuohooJeSjEUSX03DkqgHilmOCV69aW8hsvmeS\nk69qukQkQfYlrGWGCAlcjMA5hreepAQ4ow9gAvocSxToGsdn9JE4Z3JJC6AZbnhw\nTvNsnHNR0RDS4dvqkLap8So=\n-----END PRIVATE KEY-----\n",
+  "client_email": "socialsforce@melodic-voice-509015-j6.iam.gserviceaccount.com",
+  "client_id": "106669474830456441355",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/socialsforce%40melodic-voice-509015-j6.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

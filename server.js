@@ -17,7 +17,13 @@ app.use(express.json());
 
 
 
+const { BetaAnalyticsDataClient } = require("@google-analytics/data");
 
+const analyticsClient = new BetaAnalyticsDataClient({
+    keyFilename: "./google-analytics.json"
+});
+
+const GA_PROPERTY_ID = "554926387";
 
 
 
@@ -906,6 +912,109 @@ app.post("/admin/articles/:id/delete", async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+async function testGoogleAnalytics() {
+    const [response] = await analyticsClient.runReport({
+        property: `properties/${GA_PROPERTY_ID}`,
+
+        dateRanges: [
+            {
+                startDate: "30daysAgo",
+                endDate: "today"
+            }
+        ],
+
+        dimensions: [
+            { name: "date" },
+            { name: "pagePath" },
+            { name: "pageTitle" },
+            { name: "deviceCategory" },
+            { name: "country" },
+            { name: "city" },
+            { name: "browser" },
+            { name: "operatingSystem" },
+            { name: "sessionDefaultChannelGroup" },
+            { name: "sessionSource" },
+            { name: "sessionMedium" }
+        ],
+
+        metrics: [
+            { name: "screenPageViews" },
+            { name: "activeUsers" },
+            { name: "newUsers" },
+            { name: "sessions" },
+            { name: "engagedSessions" },
+            { name: "averageSessionDuration" },
+            { name: "bounceRate" },
+            { name: "eventCount" }
+        ],
+
+        limit: 1000
+    });
+
+    console.log("\n========== GOOGLE ANALYTICS ==========\n");
+
+    console.log(`Filas recibidas: ${response.rows?.length || 0}`);
+
+    for (const row of response.rows || []) {
+
+        const dimensions = {};
+        const metrics = {};
+
+        row.dimensionValues?.forEach((value, index) => {
+            dimensions[index] = value.value;
+        });
+
+        row.metricValues?.forEach((value, index) => {
+            metrics[index] = value.value;
+        });
+
+        console.log({
+            dimensions,
+            metrics
+        });
+    }
+
+    console.log("\n=======================================\n");
+
+    return response;
+}
+
+
+
+
+app.get("/admin/test-analytics", async (req, res) => {
+    try {
+
+        const response = await testGoogleAnalytics();
+
+        res.json({
+            success: true,
+            rows: response.rows?.length || 0,
+            message: "Datos recibidos correctamente. Mira la consola de Node.js."
+        });
+
+    } catch (error) {
+
+        console.error("\n========== GOOGLE ANALYTICS ERROR ==========\n");
+        console.error(error);
+        console.error("\n============================================\n");
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
 
 
 
