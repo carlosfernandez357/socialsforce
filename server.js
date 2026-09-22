@@ -578,7 +578,31 @@ app.get("/api/extract", async (req, res) => {
 
 
 
+function requireAdmin(req, res, next) {
 
+    const token = req.cookies.admin_token;
+
+    if (!token) {
+        return res.redirect("/admin");
+    }
+
+    try {
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        req.admin = decoded;
+
+        next();
+
+    } catch (error) {
+
+        res.clearCookie("admin_token");
+
+        return res.redirect("/admin");
+
+    }
+
+}
 
 
 
@@ -588,19 +612,8 @@ const ADMIN_PASSWORD = "juegoscuenta";
 
 const JWT_SECRET = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
 
-app.get("/admin", async (req, res) => {
+app.get("/admin", requireAdmin, async (req, res) => {
     const token = req.cookies.admin_token;
-
-    if (!token) {
-        return res.render("admin/login", {error: null});
-    }
-
-    try {
-        jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-        res.clearCookie("admin_token");
-        return res.render("admin/login", {error: "La sesión ha expirado"});
-    }
 
     try {
         const [[posts]] = await db.query(`
@@ -748,19 +761,7 @@ app.get("/admin/logout", (req, res) => {
 });
 
 
-app.get("/admin/articles", async (req, res) => {
-    const token = req.cookies.admin_token;
-
-    if (!token) {
-        return res.redirect("/admin");
-    }
-
-    try {
-        jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-        res.clearCookie("admin_token");
-        return res.redirect("/admin");
-    }
+app.get("/admin/articles", requireAdmin, async (req, res) => {
 
     try {
         const [articles] = await db.query(`
@@ -777,19 +778,8 @@ app.get("/admin/articles", async (req, res) => {
     }
 });
 
-app.post("/admin/articles/:id/delete", async (req, res) => {
-    const token = req.cookies.admin_token;
+app.post("/admin/articles/:id/delete", requireAdmin, async (req, res) => {
 
-    if (!token) {
-        return res.redirect("/admin");
-    }
-
-    try {
-        jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-        res.clearCookie("admin_token");
-        return res.redirect("/admin");
-    }
 
     try {
         await db.query(`
