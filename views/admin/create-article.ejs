@@ -9,7 +9,7 @@
             <p>Create articles manually or generate them with AI.</p>
         </div>
     </div>
-
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
     <div class="admin-create-layout">
 
         <div class="admin-card">
@@ -37,7 +37,9 @@
                 </button>
 
             </form>
-
+            <div class="admin-ai-status" id="aiStatus">
+                Waiting...
+            </div>
         </div>
 
         <div class="admin-card">
@@ -102,11 +104,7 @@
 
                 <div class="admin-form-group">
                     <label>Content (HTML)</label>
-                    <textarea
-                        name="content"
-                        id="content"
-                        rows="20"
-                    ></textarea>
+                    <textarea name="content" id="content"></textarea>
                 </div>
 
                 <button
@@ -131,41 +129,96 @@ document.getElementById("aiForm").addEventListener("submit", async e => {
     e.preventDefault();
 
     const prompt = document.getElementById("aiPrompt").value;
-
     const button = e.target.querySelector("button");
+    const status = document.getElementById("aiStatus");
+
+    // Función para escribir en la consola
+    function log(message) {
+        const time = new Date().toLocaleTimeString();
+        status.textContent += `\n[${time}] ${message}`;
+        status.scrollTop = status.scrollHeight;
+    }
+
+    // Limpiar consola
+    status.textContent = "";
+
+    log("Starting article generation...");
+    log(`Prompt length: ${prompt.length} characters`);
 
     button.disabled = true;
     button.textContent = "Generating...";
 
     try {
 
+        log("Sending request to /createArticle...");
+
         const response = await fetch("/createArticle", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({prompt})
+            body: JSON.stringify({ prompt })
         });
+
+        log(`Response received: HTTP ${response.status}`);
+
+        if (!response.ok) {
+            throw new Error(`Server returned HTTP ${response.status}`);
+        }
+
+        log("Parsing response...");
 
         const article = await response.json();
 
+        log("Article generated successfully.");
+        log(`Title: ${article.title || "N/A"}`);
+        log(`Slug: ${article.slug || "N/A"}`);
+        log(`Category: ${article.category || "N/A"}`);
+        log(`Content length: ${(article.content || "").length} characters`);
+
+        // Rellenar formulario
         document.getElementById("title").value = article.title || "";
         document.getElementById("slug").value = article.slug || "";
         document.getElementById("excerpt").value = article.excerpt || "";
         document.getElementById("category").value = article.category || "";
         document.getElementById("content").value = article.content || "";
 
-    } catch(err) {
+        log("Form updated successfully.");
+        log("Done.");
 
-        alert(err.message);
+    } catch (err) {
+
+        log(`ERROR: ${err.message}`);
+        console.error("Article generation error:", err);
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Generate Article";
 
     }
 
-    button.disabled = false;
-    button.textContent = "Generate Article";
-
 });
 
+</script>
+
+<script>
+tinymce.init({
+    selector: "#content",
+    height: 700,
+    menubar: true,
+    plugins: [
+        "lists",
+        "link",
+        "image",
+        "table",
+        "code",
+        "fullscreen",
+        "preview"
+    ],
+    toolbar:
+        "undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image table | code fullscreen preview"
+});
 </script>
 
 <%- include("partials/footer") %>
