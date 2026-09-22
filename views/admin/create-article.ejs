@@ -1,0 +1,171 @@
+<%- include("header") %>
+<%- include("sidebar") %>
+
+<main class="admin-main">
+
+    <div class="admin-page-header">
+        <div>
+            <h1>Create Article</h1>
+            <p>Create articles manually or generate them with AI.</p>
+        </div>
+    </div>
+
+    <div class="admin-create-layout">
+
+        <div class="admin-card">
+
+            <div class="admin-card-header">
+                <h2>AI Generator</h2>
+            </div>
+
+            <form id="aiForm">
+
+                <div class="admin-form-group">
+                    <label>Topic</label>
+                    <input
+                        type="text"
+                        id="aiPrompt"
+                        placeholder="Example: Best AI tools for SEO"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="admin-primary-button"
+                >
+                    Generate Article
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="admin-card">
+
+            <div class="admin-card-header">
+                <h2>Article Information</h2>
+            </div>
+
+            <form
+                action="/admin/articles/create"
+                method="POST"
+            >
+
+                <div class="admin-form-group">
+                    <label>Title</label>
+                    <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        required
+                    >
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Slug</label>
+                    <input
+                        type="text"
+                        name="slug"
+                        id="slug"
+                        required
+                    >
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Category</label>
+                    <input
+                        type="text"
+                        name="category"
+                        id="category"
+                        required
+                    >
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Excerpt</label>
+                    <textarea
+                        name="excerpt"
+                        id="excerpt"
+                        rows="4"
+                    ></textarea>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Featured Image</label>
+                    <input
+                        type="text"
+                        name="image"
+                        id="image"
+                        placeholder="https://..."
+                    >
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Content (HTML)</label>
+                    <textarea
+                        name="content"
+                        id="content"
+                        rows="20"
+                    ></textarea>
+                </div>
+
+                <button
+                    type="submit"
+                    class="admin-primary-button"
+                >
+                    Publish Article
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+
+document.getElementById("aiForm").addEventListener("submit", async e => {
+
+    e.preventDefault();
+
+    const prompt = document.getElementById("aiPrompt").value;
+
+    const button = e.target.querySelector("button");
+
+    button.disabled = true;
+    button.textContent = "Generating...";
+
+    try {
+
+        const response = await fetch("/createArticle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({prompt})
+        });
+
+        const article = await response.json();
+
+        document.getElementById("title").value = article.title || "";
+        document.getElementById("slug").value = article.slug || "";
+        document.getElementById("excerpt").value = article.excerpt || "";
+        document.getElementById("category").value = article.category || "";
+        document.getElementById("content").value = article.content || "";
+
+    } catch(err) {
+
+        alert(err.message);
+
+    }
+
+    button.disabled = false;
+    button.textContent = "Generate Article";
+
+});
+
+</script>
+
+<%- include("footer") %>

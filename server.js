@@ -579,109 +579,6 @@ app.get("/api/extract", async (req, res) => {
 
 
 
-app.post("/createArticle", async (req, res) => {
-    console.log("BODY:", req.body);
-    try {
-
-        const prompt = req.body.prompt;
-        if (!prompt) {
-            return res.status(400).json({
-                success: false,
-                error: "Prompt is required"
-            });
-        }
-
-        const systemPrompt = fs.readFileSync(
-            path.join(__dirname, "prompts", "article-system.txt"),
-            "utf8"
-        );
-
-        const aiResponse = await fetch("https://n8n.legion.software/webhook/socialsForceLlm", {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                systemPrompt,
-                prompt
-            })
-
-        });
-
-        if (!aiResponse.ok) {
-
-            const errorText = await aiResponse.text();
-
-            throw new Error(
-                `AI API error ${aiResponse.status}: ${errorText}`
-            );
-        }
-
-        let article = await aiResponse.json();
-        article = article.output;
-        console.log(article)
-        if (
-            !article.title ||
-            !article.slug ||
-            !article.excerpt ||
-            !article.content ||
-            !article.category
-        ) {
-            return res.status(500).json({
-                success: false,
-                error: "AI returned incomplete article data"
-            });
-        }
-
-        const randomImageText = "images/ai/1.jpg"
-
-        const currentDate = new Date();
-
-        const [result] = await db.query(`
-            INSERT INTO posts (
-                title,
-                slug,
-                excerpt,
-                content,
-                image,
-                category,
-                published_at,
-                views
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-            article.title,
-            article.slug,
-            article.excerpt,
-            article.content,
-            article.image,
-            article.category,
-            currentDate,
-            0
-        ]);
-
-        res.status(201).json({
-            success: true,
-            post_id: result.insertId,
-            title: article.title,
-            slug: article.slug
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            error: "Error creating article"
-        });
-
-    }
-
-});
 
 
 
@@ -909,13 +806,153 @@ app.post("/admin/articles/:id/delete", async (req, res) => {
 });
 
 
+app.get("/admin/create-article", requireAdmin, (req, res) => {
+    res.render("admin/create-article");
+});
+
+app.post("/admin/articles/create", requireAdmin, async (req, res) => {
+
+    const {
+        title,
+        slug,
+        excerpt,
+        content,
+        category,
+        image
+    } = req.body;
+
+    await db.query(`
+        INSERT INTO posts (
+            title,
+            slug,
+            excerpt,
+            content,
+            category,
+            image,
+            views,
+            published_at,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
+    `, [
+        title,
+        slug,
+        excerpt,
+        content,
+        category,
+        image
+    ]);
+
+    res.redirect("/admin");
+
+});
 
 
 
 
+app.post("/createArticle", async (req, res) => {
+    console.log("BODY:", req.body);
+    try {
 
+        const prompt = req.body.prompt;
+        if (!prompt) {
+            return res.status(400).json({
+                success: false,
+                error: "Prompt is required"
+            });
+        }
 
+        const systemPrompt = fs.readFileSync(
+            path.join(__dirname, "prompts", "article-system.txt"),
+            "utf8"
+        );
 
+        const aiResponse = await fetch("https://n8n.legion.software/webhook/socialsForceLlm", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                systemPrompt,
+                prompt
+            })
+
+        });
+
+        if (!aiResponse.ok) {
+
+            const errorText = await aiResponse.text();
+
+            throw new Error(
+                `AI API error ${aiResponse.status}: ${errorText}`
+            );
+        }
+
+        let article = await aiResponse.json();
+        article = article.output;
+        console.log(article)
+        if (
+            !article.title ||
+            !article.slug ||
+            !article.excerpt ||
+            !article.content ||
+            !article.category
+        ) {
+            return res.status(500).json({
+                success: false,
+                error: "AI returned incomplete article data"
+            });
+        }
+
+        const randomImageText = "images/ai/1.jpg"
+
+        const currentDate = new Date();
+
+        const [result] = await db.query(`
+            INSERT INTO posts (
+                title,
+                slug,
+                excerpt,
+                content,
+                image,
+                category,
+                published_at,
+                views
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            article.title,
+            article.slug,
+            article.excerpt,
+            article.content,
+            article.image,
+            article.category,
+            currentDate,
+            0
+        ]);
+
+        res.status(201).json({
+            success: true,
+            post_id: result.insertId,
+            title: article.title,
+            slug: article.slug
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            error: "Error creating article"
+        });
+
+    }
+
+});
 
 
 
