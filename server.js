@@ -583,6 +583,11 @@ function requireAdmin(req, res, next) {
     const token = req.cookies.admin_token;
 
     if (!token) {
+        return res.render("admin/login", {
+
+            error: "Usuario o contraseña incorrectos"
+
+        });
         return res.redirect("/admin");
     }
 
@@ -597,7 +602,11 @@ function requireAdmin(req, res, next) {
     } catch (error) {
 
         res.clearCookie("admin_token");
+        return res.render("admin/login", {
 
+            error: "Usuario o contraseña incorrectos"
+
+        });
         return res.redirect("/admin");
 
     }
