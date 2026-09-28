@@ -834,7 +834,8 @@ app.post("/admin/articles/create", requireAdmin, async (req, res) => {
         excerpt,
         content,
         category,
-        image
+        image,
+        tags
     } = req.body;
 
     await db.query(`
@@ -845,18 +846,20 @@ app.post("/admin/articles/create", requireAdmin, async (req, res) => {
             content,
             category,
             image,
+            tags,
             views,
             published_at,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
     `, [
         title,
         slug,
         excerpt,
         content,
         category,
-        image
+        image,
+        JSON.stringify(tags || [])
     ]);
 
     res.redirect("/admin");
@@ -867,10 +870,13 @@ app.post("/admin/articles/create", requireAdmin, async (req, res) => {
 
 
 app.post("/createArticle", async (req, res) => {
+
     console.log("BODY:", req.body);
+
     try {
 
         const prompt = req.body.prompt;
+
         if (!prompt) {
             return res.status(400).json({
                 success: false,
@@ -878,25 +884,29 @@ app.post("/createArticle", async (req, res) => {
             });
         }
 
+
         const systemPrompt = fs.readFileSync(
             path.join(__dirname, "prompts", "article-system.txt"),
             "utf8"
         );
 
-        const aiResponse = await fetch("https://n8n.legion.software/webhook/socialsForceLlm", {
 
-            method: "POST",
+        const aiResponse = await fetch(
+            "https://n8n.legion.software/webhook/socialsForceLlm",
+            {
+                method: "POST",
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-            body: JSON.stringify({
-                systemPrompt,
-                prompt
-            })
+                body: JSON.stringify({
+                    systemPrompt,
+                    prompt
+                })
+            }
+        );
 
-        });
 
         if (!aiResponse.ok) {
 
@@ -905,11 +915,17 @@ app.post("/createArticle", async (req, res) => {
             throw new Error(
                 `AI API error ${aiResponse.status}: ${errorText}`
             );
+
         }
 
+
         let article = await aiResponse.json();
+
         article = article.output;
-        console.log(article)
+
+        console.log(article);
+
+
         if (
             !article.title ||
             !article.slug ||
@@ -917,15 +933,22 @@ app.post("/createArticle", async (req, res) => {
             !article.content ||
             !article.category
         ) {
+
             return res.status(500).json({
                 success: false,
                 error: "AI returned incomplete article data"
             });
+
         }
 
-        const randomImageText = "images/ai/1.jpg"
 
         const currentDate = new Date();
+
+
+        const tags = Array.isArray(article.tags)
+            ? article.tags
+            : [];
+
 
         const [result] = await db.query(`
             INSERT INTO posts (
@@ -935,10 +958,11 @@ app.post("/createArticle", async (req, res) => {
                 content,
                 image,
                 category,
+                tags,
                 published_at,
                 views
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             article.title,
             article.slug,
@@ -946,9 +970,11 @@ app.post("/createArticle", async (req, res) => {
             article.content,
             article.image,
             article.category,
+            JSON.stringify(tags),
             currentDate,
             0
         ]);
+
 
         res.status(201).json({
             success: true,
@@ -956,6 +982,7 @@ app.post("/createArticle", async (req, res) => {
             title: article.title,
             slug: article.slug
         });
+
 
     } catch (error) {
 
