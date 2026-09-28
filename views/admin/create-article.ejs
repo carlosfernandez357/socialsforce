@@ -124,7 +124,609 @@
 
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```html
+<!-- =========================================================
+     SECCIÓN DE NOTICIAS
+     Añadir debajo de la sección actual de creación de artículos
+========================================================= -->
+
+<div class="admin-card" style="margin-top: 30px;">
+
+    <h2>Noticias</h2>
+
+    <p>
+        Busca las últimas noticias y selecciona una para generar
+        un artículo.
+    </p>
+
+    <button
+        type="button"
+        class="admin-btn"
+        id="searchNewsBtn"
+    >
+        Buscar noticias
+    </button>
+
+    <div id="newsStatus" class="admin-ai-status">
+        Pulsa "Buscar noticias" para cargar las últimas noticias.
+    </div>
+
+    <div id="newsResults"></div>
+
+
+    <!-- NOTICIA SELECCIONADA -->
+
+    <div id="selectedNewsContainer" style="display:none;">
+
+        <h3>Noticia seleccionada</h3>
+
+        <div id="selectedNews"></div>
+
+        <div class="form-group">
+
+            <label for="newsPrompt">
+                Instrucciones para el artículo
+            </label>
+
+            <textarea
+                id="newsPrompt"
+                rows="6"
+                placeholder="Escribe cómo quieres que la IA cree el artículo..."
+            ></textarea>
+
+        </div>
+
+        <button
+            type="button"
+            class="admin-btn"
+            id="generateNewsArticleBtn"
+        >
+            Generar artículo
+        </button>
+
+        <div
+            id="newsGenerateStatus"
+            class="admin-ai-status"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       VARIABLES
+    ========================================================= */
+
+    const searchNewsBtn =
+        document.getElementById("searchNewsBtn");
+
+    const newsStatus =
+        document.getElementById("newsStatus");
+
+    const newsResults =
+        document.getElementById("newsResults");
+
+    const selectedNewsContainer =
+        document.getElementById("selectedNewsContainer");
+
+    const selectedNewsElement =
+        document.getElementById("selectedNews");
+
+    const newsPrompt =
+        document.getElementById("newsPrompt");
+
+    const generateNewsArticleBtn =
+        document.getElementById("generateNewsArticleBtn");
+
+    const newsGenerateStatus =
+        document.getElementById("newsGenerateStatus");
+
+
+    let selectedNews = null;
+
+
+    /* =========================================================
+       BUSCAR NOTICIAS EN SERPAPI
+    ========================================================= */
+
+    searchNewsBtn.addEventListener("click", async () => {
+
+        searchNewsBtn.disabled = true;
+
+        searchNewsBtn.textContent =
+            "Buscando...";
+
+        newsStatus.textContent =
+            "Buscando noticias...";
+
+        newsResults.innerHTML = "";
+
+        selectedNewsContainer.style.display =
+            "none";
+
+        selectedNews = null;
+
+
+        try {
+
+            const response = await fetch(
+                "https://serpapi.com/search.json" +
+                "?engine=google_news" +
+                "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
+                "&hl=es" +
+                "&gl=es" +
+                "&num=10"
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Error HTTP " + response.status
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                "SERPAPI GOOGLE NEWS:",
+                data
+            );
+
+
+            const news =
+                (data.news_results || []).slice(0, 10);
+
+
+            if (!news.length) {
+
+                newsStatus.textContent =
+                    "No se encontraron noticias.";
+
+                return;
+
+            }
+
+
+            newsStatus.textContent =
+                `${news.length} noticias encontradas.`;
+
+
+            /* =================================================
+               CREAR LISTA
+            ================================================= */
+
+            news.forEach((article, index) => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "admin-card";
+
+
+                const title =
+                    document.createElement("h3");
+
+                title.textContent =
+                    article.title || "Sin título";
+
+
+                const image =
+                    document.createElement("img");
+
+                if (article.thumbnail) {
+
+                    image.src =
+                        article.thumbnail;
+
+                    image.alt =
+                        article.title || "";
+
+                }
+
+
+                const description =
+                    document.createElement("p");
+
+                description.textContent =
+                    article.snippet || "";
+
+
+                const source =
+                    document.createElement("p");
+
+                const sourceName =
+                    typeof article.source === "object"
+                        ? article.source?.name || ""
+                        : article.source || "";
+
+                source.textContent =
+                    sourceName;
+
+
+                const selectButton =
+                    document.createElement("button");
+
+                selectButton.type =
+                    "button";
+
+                selectButton.className =
+                    "admin-btn";
+
+                selectButton.textContent =
+                    "Seleccionar";
+
+
+                /* =================================================
+                   SELECCIONAR
+                ================================================= */
+
+                selectButton.addEventListener(
+                    "click",
+                    () => {
+
+                        selectedNews = {
+
+                            title:
+                                article.title || "",
+
+                            description:
+                                article.snippet || "",
+
+                            source:
+                                sourceName,
+
+                            date:
+                                article.date || "",
+
+                            link:
+                                article.link || "",
+
+                            thumbnail:
+                                article.thumbnail || ""
+
+                        };
+
+
+                        selectedNewsElement.innerHTML = "";
+
+
+                        const selectedTitle =
+                            document.createElement("h4");
+
+                        selectedTitle.textContent =
+                            selectedNews.title;
+
+
+                        const selectedDescription =
+                            document.createElement("p");
+
+                        selectedDescription.textContent =
+                            selectedNews.description;
+
+
+                        selectedNewsElement.appendChild(
+                            selectedTitle
+                        );
+
+                        selectedNewsElement.appendChild(
+                            selectedDescription
+                        );
+
+
+                        selectedNewsContainer.style.display =
+                            "block";
+
+
+                        newsGenerateStatus.textContent =
+                            "";
+
+
+                        selectedNewsContainer.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start"
+                        });
+
+                    }
+                );
+
+
+                card.appendChild(title);
+
+
+                if (article.thumbnail) {
+
+                    card.appendChild(image);
+
+                }
+
+
+                card.appendChild(description);
+
+                card.appendChild(source);
+
+                card.appendChild(selectButton);
+
+
+                newsResults.appendChild(card);
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error SerpAPI:",
+                error
+            );
+
+
+            newsStatus.textContent =
+                "Error: " + error.message;
+
+        } finally {
+
+            searchNewsBtn.disabled =
+                false;
+
+            searchNewsBtn.textContent =
+                "Buscar noticias";
+
+        }
+
+    });
+
+
+    /* =========================================================
+       GENERAR ARTÍCULO
+    ========================================================= */
+
+    generateNewsArticleBtn.addEventListener(
+        "click",
+        async () => {
+
+            if (!selectedNews) {
+
+                newsGenerateStatus.textContent =
+                    "Selecciona primero una noticia.";
+
+                return;
+
+            }
+
+
+            const prompt =
+                newsPrompt.value.trim();
+
+
+            if (!prompt) {
+
+                newsGenerateStatus.textContent =
+                    "Escribe las instrucciones para la IA.";
+
+                return;
+
+            }
+
+
+            generateNewsArticleBtn.disabled =
+                true;
+
+            generateNewsArticleBtn.textContent =
+                "Generando...";
+
+
+            newsGenerateStatus.textContent =
+                "Generando artículo...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/createArticle",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                prompt: prompt,
+
+                                info: selectedNews
+
+                            })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        "Error generando el artículo"
+                    );
+
+                }
+
+
+                console.log(
+                    "ARTÍCULO GENERADO:",
+                    data
+                );
+
+
+                /* =================================================
+                   RELLENAR FORMULARIO EXISTENTE
+                ================================================= */
+
+                const title =
+                    document.getElementById("title");
+
+                const slug =
+                    document.getElementById("slug");
+
+                const excerpt =
+                    document.getElementById("excerpt");
+
+                const category =
+                    document.getElementById("category");
+
+
+                if (title)
+                    title.value =
+                        data.title || "";
+
+
+                if (slug)
+                    slug.value =
+                        data.slug || "";
+
+
+                if (excerpt)
+                    excerpt.value =
+                        data.excerpt || "";
+
+
+                if (category)
+                    category.value =
+                        data.category || "";
+
+
+                /* =================================================
+                   TINYMCE
+                ================================================= */
+
+                if (data.content) {
+
+                    const editor =
+                        tinymce.get("content");
+
+
+                    if (editor) {
+
+                        editor.setContent(
+                            data.content
+                        );
+
+                    }
+
+                }
+
+
+                newsGenerateStatus.textContent =
+                    "Artículo generado correctamente.";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error generando artículo:",
+                    error
+                );
+
+
+                newsGenerateStatus.textContent =
+                    "Error: " + error.message;
+
+            } finally {
+
+                generateNewsArticleBtn.disabled =
+                    false;
+
+                generateNewsArticleBtn.textContent =
+                    "Generar artículo";
+
+            }
+
+        }
+    );
+
+</script>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </main>
+
 
 <script>
 
