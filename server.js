@@ -47,10 +47,14 @@ app.get("/", async (req, res) => {
 
 
         const [trendingPosts] = await db.query(`
-            SELECT *
+            SELECT *,
+                views / POW(
+                    TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2,
+                    1.5
+                ) AS trend_score
             FROM posts
             WHERE published_at <= NOW()
-            ORDER BY views DESC
+            ORDER BY trend_score DESC
             LIMIT 6
         `);
 
