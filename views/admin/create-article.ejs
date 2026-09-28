@@ -81,6 +81,20 @@
                         required
                     >
                 </div>
+                <div class="admin-form-group">
+                    <label>Tags</label>
+
+                    <input
+                        type="text"
+                        name="tags"
+                        id="tags"
+                        placeholder="OpenAI, ChatGPT, GPT-5, LLM"
+                    >
+
+                    <small>
+                        Separate tags with commas.
+                    </small>
+                </div>
 
                 <div class="admin-form-group">
                     <label>Excerpt</label>
@@ -210,463 +224,220 @@
 
 
 <script>
+generateNewsArticleBtn.addEventListener(
+    "click",
+    async () => {
 
-    /* =========================================================
-       VARIABLES
-    ========================================================= */
+        if (!selectedNews) {
 
-    const searchNewsBtn =
-        document.getElementById("searchNewsBtn");
+            newsGenerateStatus.textContent =
+                "Selecciona primero una noticia.";
 
-    const newsStatus =
-        document.getElementById("newsStatus");
+            return;
 
-    const newsResults =
-        document.getElementById("newsResults");
+        }
 
-    const selectedNewsContainer =
-        document.getElementById("selectedNewsContainer");
+        const prompt =
+            newsPrompt.value.trim();
 
-    const selectedNewsElement =
-        document.getElementById("selectedNews");
+        if (!prompt) {
 
-    const newsPrompt =
-        document.getElementById("newsPrompt");
+            newsGenerateStatus.textContent =
+                "Escribe las instrucciones para la IA.";
 
-    const generateNewsArticleBtn =
-        document.getElementById("generateNewsArticleBtn");
+            return;
 
-    const newsGenerateStatus =
-        document.getElementById("newsGenerateStatus");
+        }
 
+        let fprompt =
+            "Instrucciones: " +
+            prompt +
+            "\n\n\n Info: \n\n" +
+            JSON.stringify(
+                selectedNews,
+                null,
+                2
+            );
 
-    let selectedNews = null;
+        generateNewsArticleBtn.disabled =
+            true;
 
+        generateNewsArticleBtn.textContent =
+            "Generando...";
 
-    /* =========================================================
-       BUSCAR NOTICIAS EN SERPAPI
-    ========================================================= */
-
-    searchNewsBtn.addEventListener("click", async () => {
-
-        searchNewsBtn.disabled = true;
-
-        searchNewsBtn.textContent =
-            "Buscando...";
-
-        newsStatus.textContent =
-            "Buscando noticias...";
-
-        newsResults.innerHTML = "";
-
-        selectedNewsContainer.style.display =
-            "none";
-
-        selectedNews = null;
-
+        newsGenerateStatus.textContent =
+            "Generando artículo...";
 
         try {
 
-            const response = await fetch(
-                "/admin/news?country=es");
+            const response =
+                await fetch(
+                    "/createArticle",
+                    {
 
+                        method: "POST",
 
-            if (!response.ok) {
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                throw new Error(
-                    "Error HTTP " + response.status
-                );
+                        body: JSON.stringify({
 
-            }
+                            prompt: fprompt
 
-
-            const data =
-                await response.json();
-
-
-            console.log(
-                "SERPAPI GOOGLE NEWS:",
-                data
-            );
-
-
-            const news =
-                (data.news_results || []).slice(0, 10);
-
-
-            if (!news.length) {
-
-                newsStatus.textContent =
-                    "No se encontraron noticias.";
-
-                return;
-
-            }
-
-
-            newsStatus.textContent =
-                `${news.length} noticias encontradas.`;
-
-
-            /* =================================================
-               CREAR LISTA
-            ================================================= */
-
-            news.forEach((article, index) => {
-
-                const card =
-                    document.createElement("div");
-
-                card.className =
-                    "admin-card";
-
-
-                const title =
-                    document.createElement("h3");
-
-                title.textContent =
-                    article.title || "Sin título";
-
-
-                const image =
-                    document.createElement("img");
-
-                if (article.thumbnail) {
-
-                    image.src =
-                        article.thumbnail;
-
-                    image.alt =
-                        article.title || "";
-
-                }
-
-
-                const description =
-                    document.createElement("p");
-
-                description.textContent =
-                    article.snippet || "";
-
-
-                const source =
-                    document.createElement("p");
-
-                const sourceName =
-                    typeof article.source === "object"
-                        ? article.source?.name || ""
-                        : article.source || "";
-
-                source.textContent =
-                    sourceName;
-
-
-                const selectButton =
-                    document.createElement("button");
-
-                selectButton.type =
-                    "button";
-
-                selectButton.className =
-                    "admin-btn";
-
-                selectButton.textContent =
-                    "Seleccionar";
-
-
-                /* =================================================
-                   SELECCIONAR
-                ================================================= */
-
-                selectButton.addEventListener(
-                    "click",
-                    () => {
-
-                        selectedNews = {
-
-                            title:
-                                article.title || "",
-
-                            description:
-                                article.snippet || "",
-
-                            source:
-                                sourceName,
-
-                            date:
-                                article.date || "",
-
-                            link:
-                                article.link || "",
-
-                            thumbnail:
-                                article.thumbnail || ""
-
-                        };
-
-
-                        selectedNewsElement.innerHTML = "";
-
-
-                        const selectedTitle =
-                            document.createElement("h4");
-
-                        selectedTitle.textContent =
-                            selectedNews.title;
-
-
-                        const selectedDescription =
-                            document.createElement("p");
-
-                        selectedDescription.textContent =
-                            selectedNews.description;
-
-
-                        selectedNewsElement.appendChild(
-                            selectedTitle
-                        );
-
-                        selectedNewsElement.appendChild(
-                            selectedDescription
-                        );
-
-
-                        selectedNewsContainer.style.display =
-                            "block";
-
-
-                        newsGenerateStatus.textContent =
-                            "";
-
-
-                        selectedNewsContainer.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start"
-                        });
+                        })
 
                     }
                 );
 
+            const data =
+                await response.json();
 
-                card.appendChild(title);
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Error generando el artículo"
+                );
+
+            }
+
+            console.log(
+                "ARTÍCULO GENERADO:",
+                data
+            );
 
 
-                if (article.thumbnail) {
+            /* =================================================
+               OBTENER CAMPOS DEL FORMULARIO
+            ================================================= */
 
-                    card.appendChild(image);
+            const title =
+                document.getElementById("title");
+
+            const slug =
+                document.getElementById("slug");
+
+            const excerpt =
+                document.getElementById("excerpt");
+
+            const category =
+                document.getElementById("category");
+
+            const image =
+                document.getElementById("image");
+
+            const tags =
+                document.getElementById("tags");
+
+
+            /* =================================================
+               RELLENAR CAMPOS
+            ================================================= */
+
+            if (title) {
+
+                title.value =
+                    data.title || "";
+
+            }
+
+
+            if (slug) {
+
+                slug.value =
+                    data.slug || "";
+
+            }
+
+
+            if (excerpt) {
+
+                excerpt.value =
+                    data.excerpt || "";
+
+            }
+
+
+            if (category) {
+
+                category.value =
+                    data.category || "";
+
+            }
+
+
+            if (image) {
+
+                image.value =
+                    data.image || "";
+
+            }
+
+
+            if (tags) {
+
+                tags.value =
+                    Array.isArray(data.tags)
+                        ? data.tags.join(", ")
+                        : "";
+
+            }
+
+
+            /* =================================================
+               TINYMCE
+            ================================================= */
+
+            if (data.content) {
+
+                const editor =
+                    tinymce.get("content");
+
+                if (editor) {
+
+                    editor.setContent(
+                        data.content
+                    );
 
                 }
 
-
-                card.appendChild(description);
-
-                card.appendChild(source);
-
-                card.appendChild(selectButton);
+            }
 
 
-                newsResults.appendChild(card);
+            /* =================================================
+               ESTADO
+            ================================================= */
 
-            });
+            newsGenerateStatus.textContent =
+                "Artículo generado correctamente.";
 
 
         } catch (error) {
 
             console.error(
-                "Error SerpAPI:",
+                "Error generando artículo:",
                 error
             );
 
+            newsGenerateStatus.textContent =
+                "Error: " +
+                error.message;
 
-            newsStatus.textContent =
-                "Error: " + error.message;
 
         } finally {
 
-            searchNewsBtn.disabled =
+            generateNewsArticleBtn.disabled =
                 false;
 
-            searchNewsBtn.textContent =
-                "Buscar noticias";
-
-        }
-
-    });
-
-
-    /* =========================================================
-       GENERAR ARTÍCULO
-    ========================================================= */
-
-    generateNewsArticleBtn.addEventListener(
-        "click",
-        async () => {
-
-            if (!selectedNews) {
-
-                newsGenerateStatus.textContent =
-                    "Selecciona primero una noticia.";
-
-                return;
-
-            }
-
-
-            const prompt =
-                newsPrompt.value.trim();
-
-
-            if (!prompt) {
-
-                newsGenerateStatus.textContent =
-                    "Escribe las instrucciones para la IA.";
-
-                return;
-
-            }
-            let fprompt = "Instrucciones: " + prompt + "\n\n\n Info: \n\n"+ JSON.stringify(selectedNews, null, 2)
-
-            generateNewsArticleBtn.disabled =
-                true;
-
             generateNewsArticleBtn.textContent =
-                "Generando...";
-
-
-            newsGenerateStatus.textContent =
-                "Generando artículo...";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/createArticle",
-                        {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                prompt: fprompt
-
-                            })
-
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.error ||
-                        "Error generando el artículo"
-                    );
-
-                }
-
-
-                console.log(
-                    "ARTÍCULO GENERADO:",
-                    data
-                );
-
-
-                /* =================================================
-                   RELLENAR FORMULARIO EXISTENTE
-                ================================================= */
-
-                const title =
-                    document.getElementById("title");
-
-                const slug =
-                    document.getElementById("slug");
-
-                const excerpt =
-                    document.getElementById("excerpt");
-
-                const category =
-                    document.getElementById("category");
-
-
-                if (title)
-                    title.value =
-                        data.title || "";
-
-
-                if (slug)
-                    slug.value =
-                        data.slug || "";
-
-
-                if (excerpt)
-                    excerpt.value =
-                        data.excerpt || "";
-
-
-                if (category)
-                    category.value =
-                        data.category || "";
-
-
-                /* =================================================
-                   TINYMCE
-                ================================================= */
-
-                if (data.content) {
-
-                    const editor =
-                        tinymce.get("content");
-
-
-                    if (editor) {
-
-                        editor.setContent(
-                            data.content
-                        );
-
-                    }
-
-                }
-
-
-                newsGenerateStatus.textContent =
-                    "Artículo generado correctamente.";
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error generando artículo:",
-                    error
-                );
-
-
-                newsGenerateStatus.textContent =
-                    "Error: " + error.message;
-
-            } finally {
-
-                generateNewsArticleBtn.disabled =
-                    false;
-
-                generateNewsArticleBtn.textContent =
-                    "Generar artículo";
-
-            }
+                "Generar artículo";
 
         }
-    );
 
+    }
+);
 </script>
 
 
