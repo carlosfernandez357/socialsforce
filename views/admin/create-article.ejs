@@ -529,7 +529,7 @@
                 return;
 
             }
-            let fprompt = "Instrucciones: " + prompt + "\n\n\n Info: \n\n"+ selectedNews
+            let fprompt = "Instrucciones: " + prompt + "\n\n\n Info: \n\n"+ JSON.stringify(selectedNews, null, 2)
 
             generateNewsArticleBtn.disabled =
                 true;
