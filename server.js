@@ -955,18 +955,45 @@ app.post("/createArticle", async (req, res) => {
 
 });
 
-app.get("/admin/news", requireAdmin, async (req, res) => {
+app.get("/admin/news", async (req, res) => {
     try {
 
         const country = req.query.country || "es";
 
+        // Primera petición para obtener los tokens de Google News
+        const firstResponse = await fetch(
+            "https://serpapi.com/search.json" +
+            "?engine=google_news" +
+            "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
+            "&hl=es" +
+            "&gl=" + encodeURIComponent(country)
+        );
+
+        const firstData = await firstResponse.json();
+
+        if (!firstResponse.ok) {
+            return res.status(firstResponse.status).json(firstData);
+        }
+
+        // Buscar "For You"
+        const forYou = (firstData.sub_menu_links || [])
+            .find(link => link.title === "For You");
+
+        if (!forYou) {
+            return res.status(404).json({
+                error: "No se encontró la sección For You"
+            });
+        }
+
+        // Segunda petición usando los tokens de For You
         const response = await fetch(
-            "https://serpapi.com/search" +
+            "https://serpapi.com/search.json" +
             "?engine=google_news" +
             "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
             "&hl=es" +
             "&gl=" + encodeURIComponent(country) +
-            "&num=10"
+            "&publication_token=" + encodeURIComponent(forYou.publication_token) +
+            "&section_token=" + encodeURIComponent(forYou.section_token)
         );
 
         const data = await response.json();
@@ -979,7 +1006,7 @@ app.get("/admin/news", requireAdmin, async (req, res) => {
 
     } catch (error) {
 
-        console.error("SERPAPI NEWS ERROR:", error);
+        console.error("GOOGLE NEWS ERROR:", error);
 
         res.status(500).json({
             error: error.message
@@ -987,7 +1014,6 @@ app.get("/admin/news", requireAdmin, async (req, res) => {
 
     }
 });
-
 
 
 
