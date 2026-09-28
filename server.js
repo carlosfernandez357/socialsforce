@@ -129,7 +129,7 @@ app.get("/article/:slug", async (req, res) => {
         `, [slug]);
 
         if (rows.length === 0) {
-            return res.status(404).send("Article not found");
+            return res.redirect(302, '/categories');
         }
 
         const post = rows[0];
@@ -233,6 +233,7 @@ app.get("/recent", async (req, res) => {
             FROM posts
             WHERE published_at <= NOW()
             ORDER BY published_at DESC
+            LIMIT 30
         `);
 
         res.render("recent", {
@@ -261,6 +262,7 @@ app.get("/trending", async (req, res) => {
             FROM posts
             WHERE published_at <= NOW()
             ORDER BY views DESC
+            LIMIT 30
         `);
 
         res.render("trending", {
@@ -357,11 +359,8 @@ app.get("/category/:category", async (req, res) => {
             LIMIT 1
         `, [categoryParam.toLowerCase()]);
 
-
         if (categoryRows.length === 0) {
-
-            return res.status(404).send("Category not found");
-
+            return res.redirect(302, '/categories');
         }
 
 
