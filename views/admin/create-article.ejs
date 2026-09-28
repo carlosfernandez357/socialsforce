@@ -3,6 +3,7 @@
 <%- include("partials/sidebar") %>
 
 <main class="admin-main">
+
     <link rel="stylesheet" href="/css/admin.css">
 
     <div class="admin-page-header">
@@ -14,11 +15,12 @@
 
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
 
-    <div class="admin-create-layout">
 
-        <!-- ========================= -->
-        <!-- AI GENERATOR -->
-        <!-- ========================= -->
+    <!-- =====================================================
+         AI ARTICLE GENERATOR
+         ===================================================== -->
+
+    <div class="admin-create-layout">
 
         <div class="admin-card">
 
@@ -29,12 +31,14 @@
             <form id="aiForm">
 
                 <div class="admin-form-group">
+
                     <label>Topic</label>
 
                     <textarea
                         id="aiPrompt"
                         placeholder="Example: Best AI tools for SEO"
                     ></textarea>
+
                 </div>
 
                 <button
@@ -46,9 +50,14 @@
 
             </form>
 
-            <div class="admin-ai-status" id="aiStatus">
+
+            <div
+                class="admin-ai-status"
+                id="aiStatus"
+            >
                 Waiting...
             </div>
+
 
             <button
                 type="button"
@@ -61,9 +70,10 @@
         </div>
 
 
-        <!-- ========================= -->
-        <!-- ARTICLE INFORMATION -->
-        <!-- ========================= -->
+
+        <!-- =====================================================
+             ARTICLE INFORMATION
+             ===================================================== -->
 
         <div class="admin-card">
 
@@ -77,6 +87,7 @@
             >
 
                 <div class="admin-form-group">
+
                     <label>Title</label>
 
                     <input
@@ -85,9 +96,12 @@
                         id="title"
                         required
                     >
+
                 </div>
 
+
                 <div class="admin-form-group">
+
                     <label>Slug</label>
 
                     <input
@@ -96,9 +110,12 @@
                         id="slug"
                         required
                     >
+
                 </div>
 
+
                 <div class="admin-form-group">
+
                     <label>Category</label>
 
                     <input
@@ -107,9 +124,12 @@
                         id="category"
                         required
                     >
+
                 </div>
 
+
                 <div class="admin-form-group">
+
                     <label>Excerpt</label>
 
                     <textarea
@@ -117,9 +137,12 @@
                         id="excerpt"
                         rows="4"
                     ></textarea>
+
                 </div>
 
+
                 <div class="admin-form-group">
+
                     <label>Featured Image</label>
 
                     <input
@@ -128,16 +151,21 @@
                         id="image"
                         placeholder="https://..."
                     >
+
                 </div>
 
+
                 <div class="admin-form-group">
+
                     <label>Content (HTML)</label>
 
                     <textarea
                         name="content"
                         id="content"
                     ></textarea>
+
                 </div>
+
 
                 <button
                     type="submit"
@@ -150,69 +178,153 @@
 
         </div>
 
+    </div>
 
-        <!-- ========================= -->
-        <!-- NEWS RESEARCH -->
-        <!-- ========================= -->
 
-        <div class="admin-card">
 
-            <div class="admin-card-header">
-                <h2>News Research</h2>
+    <!-- =====================================================
+         SEPARATOR
+         ===================================================== -->
 
-                <p>
-                    Search recent news and use a selected article
-                    as information for the AI generator.
+    <div
+        style="
+            margin: 60px 0;
+            border-top: 1px solid #e5e5e5;
+        "
+    ></div>
+
+
+
+    <!-- =====================================================
+         NEWS ARTICLE GENERATOR
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <h2>Generate Article From News</h2>
+
+            <p>
+                Search Google News, select a news article and
+                provide additional instructions for the AI.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             SEARCH NEWS
+             ================================================= -->
+
+        <div
+            style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                margin-bottom: 25px;
+            "
+        >
+
+            <div>
+
+                <h3 style="margin: 0;">
+                    Latest News
+                </h3>
+
+                <p
+                    style="
+                        margin: 5px 0 0;
+                        color: #777;
+                    "
+                >
+                    Search up to 10 results from Google News.
                 </p>
+
             </div>
 
-            <form id="newsSearchForm">
 
-                <div class="admin-form-group">
+            <button
+                type="button"
+                id="searchNewsButton"
+                class="admin-primary-button"
+            >
+                Search News
+            </button>
 
-                    <label>Search News</label>
-
-                    <input
-                        type="text"
-                        id="newsQuery"
-                        placeholder="Example: OpenAI latest news"
-                        required
-                    >
-
-                </div>
-
-                <button
-                    type="submit"
-                    id="newsSearchButton"
-                    class="admin-primary-button"
-                >
-                    Search News
-                </button>
-
-            </form>
+        </div>
 
 
-            <!-- NEWS RESULTS -->
 
-            <div
-                id="newsResults"
-                style="margin-top: 20px;"
-            ></div>
+        <!-- =================================================
+             NEWS RESULTS
+             ================================================= -->
+
+        <div
+            id="newsStatus"
+            style="
+                margin-bottom: 15px;
+                color: #777;
+            "
+        >
+        </div>
 
 
-            <!-- SELECTED NEWS -->
+        <div
+            id="newsResults"
+            style="
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            "
+        >
+        </div>
+
+
+
+        <!-- =================================================
+             SELECTED NEWS
+             ================================================= -->
+
+        <div
+            id="selectedNewsSection"
+            style="
+                display: none;
+                margin-top: 40px;
+                padding-top: 30px;
+                border-top: 1px solid #e5e5e5;
+            "
+        >
+
+            <h3>
+                Selected News
+            </h3>
+
 
             <div
                 id="selectedNews"
-                style="display: none; margin-top: 25px;"
+                style="
+                    margin-top: 15px;
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    background: #fafafa;
+                "
             >
+            </div>
 
-                <div class="admin-card-header">
-                    <h3>Selected News</h3>
-                </div>
 
-                <div id="selectedNewsContent"></div>
 
+            <!-- =============================================
+                 ADDITIONAL PROMPT
+                 ============================================= -->
+
+            <div
+                style="
+                    margin-top: 25px;
+                "
+            >
 
                 <div class="admin-form-group">
 
@@ -222,8 +334,13 @@
 
                     <textarea
                         id="newsPrompt"
-                        rows="6"
-                        placeholder="Example: Focus on the technical implications and explain the impact for developers."
+                        rows="7"
+                        placeholder="Tell the AI how you want the article to be created.
+
+Example:
+Focus on the technical implications of this news.
+Explain what happened, why it matters and how it could affect users.
+Do not simply rewrite the original article."
                     ></textarea>
 
                 </div>
@@ -231,10 +348,10 @@
 
                 <button
                     type="button"
-                    id="generateFromNews"
+                    id="generateNewsArticleButton"
                     class="admin-primary-button"
                 >
-                    Generate Article From News
+                    Generate Article
                 </button>
 
             </div>
@@ -246,10 +363,99 @@
 </main>
 
 
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
 <script>
 
+
 /* =========================================================
-   AI ARTICLE GENERATOR
+   GLOBAL STATE
+   ========================================================= */
+
+let selectedNews = null;
+
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function logAI(message) {
+
+    const status =
+        document.getElementById("aiStatus");
+
+    const time =
+        new Date().toLocaleTimeString();
+
+    status.textContent +=
+        `\n[${time}] ${message}`;
+
+    status.scrollTop =
+        status.scrollHeight;
+
+}
+
+
+
+/* =========================================================
+   UPDATE ARTICLE FORM
+   ========================================================= */
+
+function updateArticleForm(article) {
+
+    document.getElementById("title").value =
+        article.title || "";
+
+    document.getElementById("slug").value =
+        article.slug || "";
+
+    document.getElementById("excerpt").value =
+        article.excerpt || "";
+
+    document.getElementById("category").value =
+        article.category || "";
+
+    document.getElementById("content").value =
+        article.content || "";
+
+
+    if (window.tinymce) {
+
+        const editor =
+            tinymce.get("content");
+
+        if (editor) {
+
+            editor.setContent(
+                article.content || ""
+            );
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================================
+   NORMAL AI ARTICLE GENERATOR
    ========================================================= */
 
 document
@@ -258,59 +464,67 @@ document
 
         e.preventDefault();
 
+
         const prompt =
-            document.getElementById("aiPrompt").value;
+            document
+                .getElementById("aiPrompt")
+                .value
+                .trim();
+
 
         const button =
             e.target.querySelector("button");
+
 
         const status =
             document.getElementById("aiStatus");
 
 
-        function log(message) {
-
-            const time =
-                new Date().toLocaleTimeString();
-
-            status.textContent +=
-                `\n[${time}] ${message}`;
-
-            status.scrollTop =
-                status.scrollHeight;
-        }
-
-
         status.textContent = "";
 
-        log("Starting article generation...");
-        log(`Prompt length: ${prompt.length} characters`);
+
+        logAI(
+            "Starting article generation..."
+        );
+
+
+        logAI(
+            `Prompt length: ${prompt.length} characters`
+        );
+
 
         button.disabled = true;
-        button.textContent = "Generating...";
+
+        button.textContent =
+            "Generating...";
 
 
         try {
 
-            log("Sending request to /createArticle...");
+            logAI(
+                "Sending request to /createArticle..."
+            );
+
 
             const response =
-                await fetch("/createArticle", {
+                await fetch(
+                    "/createArticle",
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        prompt
-                    })
-
-                });
+                        body: JSON.stringify({
+                            prompt
+                        })
+                    }
+                );
 
 
-            log(
+            logAI(
                 `Response received: HTTP ${response.status}`
             );
 
@@ -328,59 +542,50 @@ document
                 await response.json();
 
 
-            log(
+            logAI(
                 "Article generated successfully."
             );
 
-            log(
+
+            logAI(
                 `Title: ${article.title || "N/A"}`
             );
 
-            log(
+
+            logAI(
                 `Slug: ${article.slug || "N/A"}`
             );
 
-            log(
+
+            logAI(
                 `Category: ${article.category || "N/A"}`
             );
 
-            log(
+
+            logAI(
                 `Content length: ${(article.content || "").length} characters`
             );
 
 
-            document.getElementById("title").value =
-                article.title || "";
-
-            document.getElementById("slug").value =
-                article.slug || "";
-
-            document.getElementById("excerpt").value =
-                article.excerpt || "";
-
-            document.getElementById("category").value =
-                article.category || "";
-
-            document.getElementById("content").value =
-                article.content || "";
+            updateArticleForm(article);
 
 
-            if (window.tinymce) {
-
-                tinymce
-                    .get("content")
-                    ?.setContent(article.content || "");
-
-            }
+            logAI(
+                "Form updated successfully."
+            );
 
 
-            log("Form updated successfully.");
-            log("Done.");
+            logAI(
+                "Done."
+            );
 
 
         } catch (err) {
 
-            log(`ERROR: ${err.message}`);
+            logAI(
+                `ERROR: ${err.message}`
+            );
+
 
             console.error(
                 "Article generation error:",
@@ -391,6 +596,7 @@ document
         } finally {
 
             button.disabled = false;
+
             button.textContent =
                 "Generate Article";
 
@@ -399,58 +605,80 @@ document
     });
 
 
+
 /* =========================================================
-   NEWS SEARCH
+   SEARCH GOOGLE NEWS
    ========================================================= */
 
-let selectedNews = null;
-
-
 document
-    .getElementById("newsSearchForm")
-    .addEventListener("submit", async e => {
-
-        e.preventDefault();
-
-
-        const query =
-            document.getElementById("newsQuery").value.trim();
+    .getElementById("searchNewsButton")
+    .addEventListener("click", async () => {
 
         const button =
-            document.getElementById("newsSearchButton");
+            document.getElementById(
+                "searchNewsButton"
+            );
+
 
         const results =
-            document.getElementById("newsResults");
+            document.getElementById(
+                "newsResults"
+            );
 
 
-        if (!query)
-            return;
+        const status =
+            document.getElementById(
+                "newsStatus"
+            );
 
 
         button.disabled = true;
-        button.textContent = "Searching...";
 
-        results.innerHTML =
-            "<p>Searching news...</p>";
+        button.textContent =
+            "Searching...";
+
+
+        status.textContent =
+            "Searching Google News...";
+
+
+        results.innerHTML = "";
+
+
+        /*
+         * =====================================================
+         * TODO:
+         *
+         * This endpoint should call SerpAPI using:
+         *
+         * engine=google_news
+         *
+         * and return a maximum of 10 results.
+         * =====================================================
+         */
 
 
         try {
 
             const response =
-                await fetch("/admin/news/search", {
+                await fetch(
+                    "/admin/news/search",
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                        body: JSON.stringify({
 
-                    body: JSON.stringify({
-                        query,
-                        limit: 10
-                    })
+                            limit: 10
 
-                });
+                        })
+
+                    }
+                );
 
 
             if (!response.ok) {
@@ -468,57 +696,133 @@ document
 
             if (
                 !data.success ||
-                !Array.isArray(data.news) ||
-                data.news.length === 0
+                !Array.isArray(data.news)
             ) {
 
-                results.innerHTML =
-                    "<p>No news found.</p>";
+                throw new Error(
+                    data.error ||
+                    "Invalid news response"
+                );
+
+            }
+
+
+            if (data.news.length === 0) {
+
+                status.textContent =
+                    "No news found.";
 
                 return;
 
             }
 
 
+            status.textContent =
+                `${data.news.length} news results found.`;
+
+
             results.innerHTML =
                 data.news
-                    .map((article, index) => `
+                    .slice(0, 10)
+                    .map((article, index) => {
 
-                        <div
-                            class="news-result"
-                            data-index="${index}"
-                            style="
-                                padding: 15px;
-                                margin-bottom: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 8px;
-                                cursor: pointer;
-                            "
-                        >
+                        return `
 
-                            <h3>
-                                ${escapeHtml(article.title || "Untitled")}
-                            </h3>
+                            <div
+                                class="news-result"
+                                data-index="${index}"
+                                style="
+                                    padding: 18px;
+                                    border: 1px solid #ddd;
+                                    border-radius: 10px;
+                                    cursor: pointer;
+                                    transition: 0.15s;
+                                    background: #fff;
+                                "
+                            >
 
-                            <div>
-                                <strong>
-                                    ${escapeHtml(article.source || "")}
-                                </strong>
+                                <div
+                                    style="
+                                        display: flex;
+                                        gap: 15px;
+                                    "
+                                >
 
-                                ${
-                                    article.date
-                                        ? ` · ${escapeHtml(article.date)}`
-                                        : ""
-                                }
+                                    ${
+                                        article.thumbnail
+                                            ? `
+                                                <img
+                                                    src="${escapeHtml(article.thumbnail)}"
+                                                    style="
+                                                        width: 120px;
+                                                        height: 80px;
+                                                        object-fit: cover;
+                                                        border-radius: 7px;
+                                                    "
+                                                >
+                                            `
+                                            : ""
+                                    }
+
+
+                                    <div>
+
+                                        <h3
+                                            style="
+                                                margin: 0 0 7px;
+                                            "
+                                        >
+                                            ${escapeHtml(article.title)}
+                                        </h3>
+
+
+                                        <div
+                                            style="
+                                                font-size: 13px;
+                                                color: #777;
+                                            "
+                                        >
+
+                                            <strong>
+                                                ${escapeHtml(article.source)}
+                                            </strong>
+
+                                            ${
+                                                article.date
+                                                    ? `
+                                                        ·
+                                                        ${escapeHtml(article.date)}
+                                                    `
+                                                    : ""
+                                            }
+
+                                        </div>
+
+
+                                        ${
+                                            article.snippet
+                                                ? `
+                                                    <p
+                                                        style="
+                                                            margin: 8px 0 0;
+                                                            color: #555;
+                                                        "
+                                                    >
+                                                        ${escapeHtml(article.snippet)}
+                                                    </p>
+                                                `
+                                                : ""
+                                        }
+
+                                    </div>
+
+                                </div>
+
                             </div>
 
-                            <p>
-                                ${escapeHtml(article.snippet || "")}
-                            </p>
+                        `;
 
-                        </div>
-
-                    `)
+                    })
                     .join("");
 
 
@@ -534,6 +838,7 @@ document
                                 Number(
                                     element.dataset.index
                                 );
+
 
                             selectNews(
                                 data.news[index]
@@ -552,13 +857,15 @@ document
                 error
             );
 
-            results.innerHTML =
-                `<p>Error searching news: ${escapeHtml(error.message)}</p>`;
+
+            status.textContent =
+                `Error: ${error.message}`;
 
 
         } finally {
 
             button.disabled = false;
+
             button.textContent =
                 "Search News";
 
@@ -567,282 +874,301 @@ document
     });
 
 
+
 /* =========================================================
    SELECT NEWS
    ========================================================= */
 
 function selectNews(article) {
 
-    selectedNews = article;
+    selectedNews =
+        article;
 
 
-    document.getElementById(
-        "selectedNews"
-    ).style.display = "block";
+    const section =
+        document.getElementById(
+            "selectedNewsSection"
+        );
 
 
-    document.getElementById(
-        "selectedNewsContent"
-    ).innerHTML = `
+    const container =
+        document.getElementById(
+            "selectedNews"
+        );
 
-        <div
+
+    section.style.display =
+        "block";
+
+
+    container.innerHTML = `
+
+        <h3>
+            ${escapeHtml(article.title)}
+        </h3>
+
+
+        <p
             style="
-                padding: 15px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
+                color: #777;
             "
         >
 
-            <h3>
-                ${escapeHtml(article.title || "")}
-            </h3>
-
-            <p>
-                <strong>Source:</strong>
-                ${escapeHtml(article.source || "")}
-            </p>
+            <strong>
+                ${escapeHtml(article.source || "Unknown source")}
+            </strong>
 
             ${
                 article.date
                     ? `
-                        <p>
-                            <strong>Date:</strong>
-                            ${escapeHtml(article.date)}
-                        </p>
+                        ·
+                        ${escapeHtml(article.date)}
                     `
                     : ""
             }
 
-            <p>
-                ${escapeHtml(article.snippet || "")}
-            </p>
+        </p>
 
-            ${
-                article.link
-                    ? `
-                        <a
-                            href="${escapeAttribute(article.link)}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Open original article
-                        </a>
-                    `
-                    : ""
-            }
 
-        </div>
+        ${
+            article.snippet
+                ? `
+                    <p>
+                        ${escapeHtml(article.snippet)}
+                    </p>
+                `
+                : ""
+        }
+
+
+        ${
+            article.link
+                ? `
+                    <a
+                        href="${escapeHtml(article.link)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Open original article
+                    </a>
+                `
+                : ""
+        }
 
     `;
+
+
+    section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 
 }
 
 
+
 /* =========================================================
-   GENERATE ARTICLE FROM NEWS
+   GENERATE ARTICLE FROM SELECTED NEWS
    ========================================================= */
 
 document
-    .getElementById("generateFromNews")
-    .addEventListener("click", async () => {
+    .getElementById(
+        "generateNewsArticleButton"
+    )
+    .addEventListener(
+        "click",
+        async () => {
 
-        if (!selectedNews) {
+            if (!selectedNews) {
 
-            alert("Select a news article first.");
+                alert(
+                    "Please select a news article first."
+                );
 
-            return;
+                return;
 
-        }
-
-
-        const prompt =
-            document
-                .getElementById("newsPrompt")
-                .value
-                .trim();
+            }
 
 
-        const button =
-            document.getElementById(
-                "generateFromNews"
+            const prompt =
+                document
+                    .getElementById(
+                        "newsPrompt"
+                    )
+                    .value
+                    .trim();
+
+
+            const button =
+                document.getElementById(
+                    "generateNewsArticleButton"
+                );
+
+
+            const status =
+                document.getElementById(
+                    "aiStatus"
+                );
+
+
+            status.textContent =
+                "";
+
+
+            logAI(
+                "Starting article generation from news..."
             );
 
 
-        const status =
-            document.getElementById(
-                "aiStatus"
+            logAI(
+                `Selected news: ${selectedNews.title}`
             );
 
 
-        button.disabled = true;
-        button.textContent =
-            "Generating...";
-
-
-        status.textContent = "";
-
-
-        function log(message) {
-
-            const time =
-                new Date().toLocaleTimeString();
-
-            status.textContent +=
-                `\n[${time}] ${message}`;
-
-            status.scrollTop =
-                status.scrollHeight;
-
-        }
-
-
-        try {
-
-            log("Starting article generation from news...");
-
-            log(
-                `News: ${selectedNews.title}`
-            );
-
-            log(
+            logAI(
                 `Source: ${selectedNews.source || "Unknown"}`
             );
 
 
-            const response =
-                await fetch("/createArticle", {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        prompt: prompt,
-
-                        info: {
-
-                            title:
-                                selectedNews.title,
-
-                            source:
-                                selectedNews.source,
-
-                            date:
-                                selectedNews.date,
-
-                            snippet:
-                                selectedNews.snippet,
-
-                            link:
-                                selectedNews.link
-
-                        }
-
-                    })
-
-                });
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    `Server returned HTTP ${response.status}`
-                );
-
-            }
-
-
-            const article =
-                await response.json();
-
-
-            log(
-                "Article generated successfully."
-            );
-
-
-            document.getElementById("title").value =
-                article.title || "";
-
-            document.getElementById("slug").value =
-                article.slug || "";
-
-            document.getElementById("excerpt").value =
-                article.excerpt || "";
-
-            document.getElementById("category").value =
-                article.category || "";
-
-            document.getElementById("content").value =
-                article.content || "";
-
-
-            if (window.tinymce) {
-
-                tinymce
-                    .get("content")
-                    ?.setContent(
-                        article.content || ""
-                    );
-
-            }
-
-
-            log("Article form updated.");
-            log("Done.");
-
-
-        } catch (error) {
-
-            log(
-                `ERROR: ${error.message}`
-            );
-
-            console.error(
-                "News article generation error:",
-                error
-            );
-
-
-        } finally {
-
-            button.disabled = false;
+            button.disabled = true;
 
             button.textContent =
-                "Generate Article From News";
+                "Generating...";
+
+
+            try {
+
+                /*
+                 * =================================================
+                 * The API receives TWO separate pieces of data:
+                 *
+                 * prompt = user's instructions
+                 *
+                 * info = information obtained from Google News
+                 *
+                 * =================================================
+                 */
+
+                const response =
+                    await fetch(
+                        "/createArticle",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                prompt: prompt,
+
+                                info: {
+
+                                    title:
+                                        selectedNews.title,
+
+                                    source:
+                                        selectedNews.source,
+
+                                    date:
+                                        selectedNews.date,
+
+                                    snippet:
+                                        selectedNews.snippet,
+
+                                    link:
+                                        selectedNews.link
+
+                                }
+
+                            })
+
+                        }
+                    );
+
+
+                logAI(
+                    `Response received: HTTP ${response.status}`
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Server returned HTTP ${response.status}`
+                    );
+
+                }
+
+
+                const article =
+                    await response.json();
+
+
+                logAI(
+                    "Article generated successfully."
+                );
+
+
+                logAI(
+                    `Title: ${article.title || "N/A"}`
+                );
+
+
+                logAI(
+                    `Content length: ${(article.content || "").length} characters`
+                );
+
+
+                updateArticleForm(
+                    article
+                );
+
+
+                logAI(
+                    "Article form updated successfully."
+                );
+
+
+                logAI(
+                    "Done."
+                );
+
+
+            } catch (error) {
+
+                logAI(
+                    `ERROR: ${error.message}`
+                );
+
+
+                console.error(
+                    "News article generation error:",
+                    error
+                );
+
+
+            } finally {
+
+                button.disabled = false;
+
+                button.textContent =
+                    "Generate Article";
+
+            }
 
         }
-
-    });
-
-
-/* =========================================================
-   HTML ESCAPING
-   ========================================================= */
-
-function escapeHtml(value) {
-
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-function escapeAttribute(value) {
-
-    return escapeHtml(value);
-
-}
+    );
 
 </script>
 
+
+
+<!-- =========================================================
+     TINYMCE
+     ========================================================= -->
 
 <script>
 
