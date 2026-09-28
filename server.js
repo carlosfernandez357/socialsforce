@@ -955,7 +955,38 @@ app.post("/createArticle", async (req, res) => {
 
 });
 
+app.get("/admin/news", requireAdmin, async (req, res) => {
+    try {
 
+        const country = req.query.country || "es";
+
+        const response = await fetch(
+            "https://serpapi.com/search.json" +
+            "?engine=google_news" +
+            "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
+            "&hl=es" +
+            "&gl=" + encodeURIComponent(country) +
+            "&num=10"
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json(data);
+        }
+
+        res.json(data);
+
+    } catch (error) {
+
+        console.error("SERPAPI NEWS ERROR:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+});
 
 
 
