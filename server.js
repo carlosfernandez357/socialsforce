@@ -955,12 +955,13 @@ app.post("/createArticle", async (req, res) => {
 
 });
 
+
 app.get("/admin/news", async (req, res) => {
     try {
 
         const country = req.query.country || "es";
 
-        // Primera petición para obtener los tokens de Google News
+        // Primera petición: obtenemos la página principal de Google News
         const firstResponse = await fetch(
             "https://serpapi.com/search.json" +
             "?engine=google_news" +
@@ -975,25 +976,35 @@ app.get("/admin/news", async (req, res) => {
             return res.status(firstResponse.status).json(firstData);
         }
 
-        // Buscar "For You"
-        const forYou = (firstData.sub_menu_links || [])
-            .find(link => link.title === "For You");
+        // Buscar la sección "Para ti / For You"
+        const forYou = (firstData.sub_menu_links || []).find(
+            link =>
+                link.section_token &&
+                link.publication_token
+        );
 
         if (!forYou) {
+            console.log("SUB MENU LINKS:", firstData.sub_menu_links);
+
             return res.status(404).json({
-                error: "No se encontró la sección For You"
+                error: "No se encontró la sección Para ti / For You",
+                sub_menu_links: firstData.sub_menu_links || []
             });
         }
 
-        // Segunda petición usando los tokens de For You
+        console.log("FOR YOU:", forYou);
+
+        // Segunda petición: acceder a Para ti
         const response = await fetch(
             "https://serpapi.com/search.json" +
             "?engine=google_news" +
             "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
             "&hl=es" +
             "&gl=" + encodeURIComponent(country) +
-            "&publication_token=" + encodeURIComponent(forYou.publication_token) +
-            "&section_token=" + encodeURIComponent(forYou.section_token)
+            "&publication_token=" +
+            encodeURIComponent(forYou.publication_token) +
+            "&section_token=" +
+            encodeURIComponent(forYou.section_token)
         );
 
         const data = await response.json();
@@ -1011,9 +1022,10 @@ app.get("/admin/news", async (req, res) => {
         res.status(500).json({
             error: error.message
         });
-
     }
 });
+
+
 
 
 
