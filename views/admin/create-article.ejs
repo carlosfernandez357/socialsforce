@@ -1,4 +1,4 @@
-```html
+```ejs
 <%- include("partials/header") %>
 <%- include("partials/sidebar") %>
 
@@ -6,162 +6,142 @@
 
     <link rel="stylesheet" href="/css/admin.css">
 
-    <div class="admin-page-header">
-        <div>
-            <h1>Create Article</h1>
-            <p>Create articles manually or generate them with AI.</p>
-        </div>
-    </div>
-
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
-
-
-    <!-- =====================================================
-         AI ARTICLE GENERATOR
-         ===================================================== -->
+    <!-- =========================================================
+         CREAR ARTÍCULO
+    ========================================================== -->
 
     <div class="admin-create-layout">
 
+        <!-- =========================
+             GENERADOR IA
+        ========================== -->
         <div class="admin-card">
 
-            <div class="admin-card-header">
-                <h2>AI Generator</h2>
-            </div>
+            <h2>Generar artículo con IA</h2>
 
             <form id="aiForm">
 
-                <div class="admin-form-group">
-
-                    <label>Topic</label>
+                <div class="form-group">
+                    <label for="aiPrompt">Prompt</label>
 
                     <textarea
                         id="aiPrompt"
-                        placeholder="Example: Best AI tools for SEO"
+                        name="prompt"
+                        rows="8"
+                        placeholder="Escribe qué artículo quieres generar..."
+                        required
                     ></textarea>
-
                 </div>
 
-                <button
-                    type="submit"
-                    class="admin-primary-button"
-                >
-                    Generate Article
+                <button type="submit" class="admin-btn" id="generateBtn">
+                    Generar artículo
                 </button>
 
             </form>
 
-
-            <div
-                class="admin-ai-status"
-                id="aiStatus"
-            >
-                Waiting...
+            <div id="aiStatus" class="admin-ai-status">
+                Esperando...
             </div>
-
 
             <button
                 type="button"
-                class="admin-ai-clear"
-                onclick="document.getElementById('aiStatus').innerHTML = ''"
+                id="clearAiStatus"
+                class="admin-btn secondary"
+                style="margin-top:10px;"
             >
-                Clear Console
+                Limpiar consola
             </button>
 
         </div>
 
 
-
-        <!-- =====================================================
-             ARTICLE INFORMATION
-             ===================================================== -->
-
+        <!-- =========================
+             INFORMACIÓN DEL ARTÍCULO
+        ========================== -->
         <div class="admin-card">
 
-            <div class="admin-card-header">
-                <h2>Article Information</h2>
-            </div>
+            <h2>Información del artículo</h2>
 
             <form
-                action="/admin/articles/create"
                 method="POST"
+                action="/admin/articles/create"
+                id="articleForm"
             >
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Title</label>
+                    <label for="title">Título</label>
 
                     <input
                         type="text"
-                        name="title"
                         id="title"
+                        name="title"
                         required
                     >
 
                 </div>
 
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Slug</label>
+                    <label for="slug">Slug</label>
 
                     <input
                         type="text"
-                        name="slug"
                         id="slug"
-                        required
+                        name="slug"
                     >
 
                 </div>
 
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Category</label>
+                    <label for="category">Categoría</label>
 
                     <input
                         type="text"
-                        name="category"
                         id="category"
-                        required
+                        name="category"
                     >
 
                 </div>
 
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Excerpt</label>
+                    <label for="excerpt">Extracto</label>
 
                     <textarea
-                        name="excerpt"
                         id="excerpt"
+                        name="excerpt"
                         rows="4"
                     ></textarea>
 
                 </div>
 
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Featured Image</label>
+                    <label for="image">Imagen</label>
 
                     <input
                         type="text"
-                        name="image"
                         id="image"
-                        placeholder="https://..."
+                        name="image"
+                        placeholder="URL de la imagen"
                     >
 
                 </div>
 
 
-                <div class="admin-form-group">
+                <div class="form-group">
 
-                    <label>Content (HTML)</label>
+                    <label for="content">Contenido</label>
 
                     <textarea
-                        name="content"
                         id="content"
+                        name="content"
                     ></textarea>
 
                 </div>
@@ -169,9 +149,9 @@
 
                 <button
                     type="submit"
-                    class="admin-primary-button"
+                    class="admin-btn"
                 >
-                    Publish Article
+                    Publicar artículo
                 </button>
 
             </form>
@@ -181,180 +161,145 @@
     </div>
 
 
-
-    <!-- =====================================================
-         SEPARATOR
-         ===================================================== -->
+    <!-- =========================================================
+         NOTICIAS
+         SECCIÓN INDEPENDIENTE
+    ========================================================== -->
 
     <div
+        class="admin-card"
         style="
-            margin: 60px 0;
-            border-top: 1px solid #e5e5e5;
+            margin-top:40px;
+            width:100%;
         "
-    ></div>
+    >
+
+        <h2>Noticias</h2>
+
+        <p style="color:#666;margin-bottom:20px;">
+            Busca las últimas noticias y selecciona una para utilizarla
+            como información de referencia para generar el artículo.
+        </p>
 
 
+        <!-- =========================
+             BOTÓN BUSCAR NOTICIAS
+        ========================== -->
 
-    <!-- =====================================================
-         NEWS ARTICLE GENERATOR
-         ===================================================== -->
+        <button
+            type="button"
+            id="searchNewsBtn"
+            class="admin-btn"
+        >
+            Buscar últimas noticias
+        </button>
 
-    <div class="admin-card">
 
-        <div class="admin-card-header">
+        <!-- =========================
+             ESTADO
+        ========================== -->
 
-            <h2>Generate Article From News</h2>
+        <div
+            id="newsStatus"
+            class="admin-ai-status"
+            style="margin-top:15px;"
+        >
+            Pulsa el botón para buscar noticias.
+        </div>
 
-            <p>
-                Search Google News, select a news article and
-                provide additional instructions for the AI.
-            </p>
+
+        <!-- =========================
+             LISTA DE NOTICIAS
+        ========================== -->
+
+        <div
+            id="newsList"
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+                margin-top:20px;
+            "
+        ></div>
+
+
+        <!-- =========================
+             NOTICIA SELECCIONADA
+        ========================== -->
+
+        <div
+            id="selectedNews"
+            style="
+                display:none;
+                margin-top:30px;
+                padding:20px;
+                border:1px solid #ddd;
+                border-radius:10px;
+                background:#fafafa;
+            "
+        >
+
+            <h3 style="margin-top:0;">
+                Noticia seleccionada
+            </h3>
+
+            <div
+                id="selectedNewsInfo"
+                style="
+                    color:#444;
+                    line-height:1.6;
+                "
+            ></div>
 
         </div>
 
 
-        <!-- =================================================
-             SEARCH NEWS
-             ================================================= -->
+        <!-- =========================
+             PROMPT PARA IA
+        ========================== -->
 
         <div
+            id="newsPromptContainer"
             style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 20px;
-                margin-bottom: 25px;
+                display:none;
+                margin-top:25px;
             "
         >
 
-            <div>
+            <label
+                for="newsPrompt"
+                style="
+                    display:block;
+                    font-weight:600;
+                    margin-bottom:8px;
+                "
+            >
+                Instrucciones adicionales para la IA
+            </label>
 
-                <h3 style="margin: 0;">
-                    Latest News
-                </h3>
-
-                <p
-                    style="
-                        margin: 5px 0 0;
-                        color: #777;
-                    "
-                >
-                    Search up to 10 results from Google News.
-                </p>
-
-            </div>
+            <textarea
+                id="newsPrompt"
+                rows="7"
+                placeholder="Ejemplo: crea un artículo informativo y SEO sobre esta noticia, explica el contexto y añade información relacionada..."
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:12px;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    resize:vertical;
+                "
+            ></textarea>
 
 
             <button
                 type="button"
-                id="searchNewsButton"
-                class="admin-primary-button"
+                id="generateNewsArticleBtn"
+                class="admin-btn"
+                style="margin-top:12px;"
             >
-                Search News
+                Generar artículo con esta noticia
             </button>
-
-        </div>
-
-
-
-        <!-- =================================================
-             NEWS RESULTS
-             ================================================= -->
-
-        <div
-            id="newsStatus"
-            style="
-                margin-bottom: 15px;
-                color: #777;
-            "
-        >
-        </div>
-
-
-        <div
-            id="newsResults"
-            style="
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            "
-        >
-        </div>
-
-
-
-        <!-- =================================================
-             SELECTED NEWS
-             ================================================= -->
-
-        <div
-            id="selectedNewsSection"
-            style="
-                display: none;
-                margin-top: 40px;
-                padding-top: 30px;
-                border-top: 1px solid #e5e5e5;
-            "
-        >
-
-            <h3>
-                Selected News
-            </h3>
-
-
-            <div
-                id="selectedNews"
-                style="
-                    margin-top: 15px;
-                    padding: 20px;
-                    border: 1px solid #ddd;
-                    border-radius: 10px;
-                    background: #fafafa;
-                "
-            >
-            </div>
-
-
-
-            <!-- =============================================
-                 ADDITIONAL PROMPT
-                 ============================================= -->
-
-            <div
-                style="
-                    margin-top: 25px;
-                "
-            >
-
-                <div class="admin-form-group">
-
-                    <label>
-                        Additional Prompt
-                    </label>
-
-                    <textarea
-                        id="newsPrompt"
-                        rows="7"
-                        placeholder="Tell the AI how you want the article to be created.
-
-Example:
-Focus on the technical implications of this news.
-Explain what happened, why it matters and how it could affect users.
-Do not simply rewrite the original article."
-                    ></textarea>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    id="generateNewsArticleButton"
-                    class="admin-primary-button"
-                >
-                    Generate Article
-                </button>
-
-            </div>
 
         </div>
 
@@ -363,242 +308,202 @@ Do not simply rewrite the original article."
 </main>
 
 
-
 <!-- =========================================================
-     JAVASCRIPT
-     ========================================================= -->
+     TINYMCE
+========================================================== -->
+
+<script
+    src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"
+    referrerpolicy="origin"
+></script>
+
 
 <script>
 
+    /* =========================================================
+       TINYMCE
+    ========================================================== */
 
-/* =========================================================
-   GLOBAL STATE
-   ========================================================= */
+    tinymce.init({
 
-let selectedNews = null;
+        selector: "#content",
 
+        height: 700,
 
+        plugins: [
+            "lists",
+            "link",
+            "image",
+            "table",
+            "code",
+            "fullscreen",
+            "preview"
+        ],
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+        toolbar:
+            "undo redo | blocks | " +
+            "bold italic underline | " +
+            "alignleft aligncenter alignright | " +
+            "bullist numlist | " +
+            "link image table | " +
+            "code fullscreen preview"
 
-function escapeHtml(value) {
-
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-function logAI(message) {
-
-    const status =
-        document.getElementById("aiStatus");
-
-    const time =
-        new Date().toLocaleTimeString();
-
-    status.textContent +=
-        `\n[${time}] ${message}`;
-
-    status.scrollTop =
-        status.scrollHeight;
-
-}
+    });
 
 
+    /* =========================================================
+       GENERADOR IA NORMAL
+    ========================================================== */
 
-/* =========================================================
-   UPDATE ARTICLE FORM
-   ========================================================= */
+    const aiForm = document.getElementById("aiForm");
 
-function updateArticleForm(article) {
+    const aiStatus = document.getElementById("aiStatus");
 
-    document.getElementById("title").value =
-        article.title || "";
+    const generateBtn = document.getElementById("generateBtn");
 
-    document.getElementById("slug").value =
-        article.slug || "";
-
-    document.getElementById("excerpt").value =
-        article.excerpt || "";
-
-    document.getElementById("category").value =
-        article.category || "";
-
-    document.getElementById("content").value =
-        article.content || "";
+    const clearAiStatus =
+        document.getElementById("clearAiStatus");
 
 
-    if (window.tinymce) {
+    function logAI(message) {
 
-        const editor =
-            tinymce.get("content");
+        const time =
+            new Date().toLocaleTimeString();
 
-        if (editor) {
+        aiStatus.innerHTML +=
+            `<div>[${time}] ${message}</div>`;
 
-            editor.setContent(
-                article.content || ""
-            );
+        aiStatus.scrollTop =
+            aiStatus.scrollHeight;
+    }
+
+
+    clearAiStatus.addEventListener("click", () => {
+
+        aiStatus.innerHTML =
+            "Consola limpiada.";
+
+    });
+
+
+    aiForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const prompt =
+            document.getElementById("aiPrompt").value.trim();
+
+
+        if (!prompt) {
+
+            logAI("Escribe un prompt.");
+
+            return;
 
         }
 
-    }
 
-}
+        generateBtn.disabled = true;
 
-
-
-/* =========================================================
-   NORMAL AI ARTICLE GENERATOR
-   ========================================================= */
-
-document
-    .getElementById("aiForm")
-    .addEventListener("submit", async e => {
-
-        e.preventDefault();
+        generateBtn.textContent =
+            "Generando...";
 
 
-        const prompt =
-            document
-                .getElementById("aiPrompt")
-                .value
-                .trim();
+        aiStatus.innerHTML =
+            "";
 
 
-        const button =
-            e.target.querySelector("button");
-
-
-        const status =
-            document.getElementById("aiStatus");
-
-
-        status.textContent = "";
-
-
-        logAI(
-            "Starting article generation..."
-        );
-
-
-        logAI(
-            `Prompt length: ${prompt.length} characters`
-        );
-
-
-        button.disabled = true;
-
-        button.textContent =
-            "Generating...";
+        logAI("Enviando prompt a la IA...");
 
 
         try {
 
-            logAI(
-                "Sending request to /createArticle..."
-            );
-
-
             const response =
-                await fetch(
-                    "/createArticle",
-                    {
-                        method: "POST",
+                await fetch("/createArticle", {
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                    method: "POST",
 
-                        body: JSON.stringify({
-                            prompt
-                        })
-                    }
-                );
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+
+                });
 
 
-            logAI(
-                `Response received: HTTP ${response.status}`
-            );
+            const data =
+                await response.json();
 
 
             if (!response.ok) {
 
                 throw new Error(
-                    `Server returned HTTP ${response.status}`
+                    data.error ||
+                    "Error generando el artículo"
                 );
 
             }
 
 
-            const article =
-                await response.json();
+            logAI(
+                "Artículo generado correctamente."
+            );
 
+
+            /* =========================
+               RELLENAR CAMPOS
+            ========================== */
+
+            document.getElementById("title").value =
+                data.title || "";
+
+
+            document.getElementById("slug").value =
+                data.slug || "";
+
+
+            document.getElementById("excerpt").value =
+                data.excerpt || "";
+
+
+            document.getElementById("category").value =
+                data.category || "";
+
+
+            if (data.content) {
+
+                const editor =
+                    tinymce.get("content");
+
+                if (editor) {
+
+                    editor.setContent(
+                        data.content
+                    );
+
+                }
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
 
             logAI(
-                "Article generated successfully."
+                "ERROR: " +
+                error.message
             );
-
-
-            logAI(
-                `Title: ${article.title || "N/A"}`
-            );
-
-
-            logAI(
-                `Slug: ${article.slug || "N/A"}`
-            );
-
-
-            logAI(
-                `Category: ${article.category || "N/A"}`
-            );
-
-
-            logAI(
-                `Content length: ${(article.content || "").length} characters`
-            );
-
-
-            updateArticleForm(article);
-
-
-            logAI(
-                "Form updated successfully."
-            );
-
-
-            logAI(
-                "Done."
-            );
-
-
-        } catch (err) {
-
-            logAI(
-                `ERROR: ${err.message}`
-            );
-
-
-            console.error(
-                "Article generation error:",
-                err
-            );
-
 
         } finally {
 
-            button.disabled = false;
+            generateBtn.disabled = false;
 
-            button.textContent =
-                "Generate Article";
+            generateBtn.textContent =
+                "Generar artículo";
 
         }
 
@@ -606,215 +511,249 @@ document
 
 
 
-/* =========================================================
-   SEARCH GOOGLE NEWS
-   ========================================================= */
+    /* =========================================================
+       NOTICIAS - SERPAPI GOOGLE NEWS
+    ========================================================== */
 
-document
-    .getElementById("searchNewsButton")
-    .addEventListener("click", async () => {
+    const searchNewsBtn =
+        document.getElementById("searchNewsBtn");
 
-        const button =
-            document.getElementById(
-                "searchNewsButton"
-            );
+    const newsStatus =
+        document.getElementById("newsStatus");
 
+    const newsList =
+        document.getElementById("newsList");
 
-        const results =
-            document.getElementById(
-                "newsResults"
-            );
+    const selectedNews =
+        document.getElementById("selectedNews");
 
+    const selectedNewsInfo =
+        document.getElementById("selectedNewsInfo");
 
-        const status =
-            document.getElementById(
-                "newsStatus"
-            );
+    const newsPromptContainer =
+        document.getElementById("newsPromptContainer");
 
 
-        button.disabled = true;
-
-        button.textContent =
-            "Searching...";
+    let selectedNewsData = null;
 
 
-        status.textContent =
-            "Searching Google News...";
+    /* =========================================================
+       BUSCAR NOTICIAS
+       
+       SERPAPI
+       engine=google_news
+       num=10
+    ========================================================== */
+
+    searchNewsBtn.addEventListener(
+        "click",
+        async () => {
+
+            searchNewsBtn.disabled = true;
+
+            searchNewsBtn.textContent =
+                "Buscando noticias...";
 
 
-        results.innerHTML = "";
+            newsStatus.innerHTML =
+                "Consultando Google News mediante SerpAPI...";
 
 
-        /*
-         * =====================================================
-         * TODO:
-         *
-         * This endpoint should call SerpAPI using:
-         *
-         * engine=google_news
-         *
-         * and return a maximum of 10 results.
-         * =====================================================
-         */
+            newsList.innerHTML =
+                "";
 
 
-        try {
+            selectedNews.style.display =
+                "none";
 
-            const response =
-                await fetch(
-                    "/admin/news/search",
-                    {
-                        method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+            newsPromptContainer.style.display =
+                "none";
 
-                        body: JSON.stringify({
 
-                            limit: 10
+            selectedNewsData = null;
 
-                        })
 
-                    }
+            try {
+
+                const response = await fetch(
+
+                    "https://serpapi.com/search.json" +
+                    "?engine=google_news" +
+                    "&api_key=d42dd2e5efabf6a42880a6cb035be641061abd8bc9eeb55d88678c4e207d922e" +
+                    "&hl=es" +
+                    "&gl=es" +
+                    "&num=10"
+
                 );
 
 
-            if (!response.ok) {
+                if (!response.ok) {
 
-                throw new Error(
-                    `HTTP ${response.status}`
+                    throw new Error(
+                        "Error HTTP " +
+                        response.status
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                console.log(
+                    "SERPAPI GOOGLE NEWS:",
+                    data
                 );
 
-            }
+
+                const news =
+                    (data.news_results || [])
+                    .slice(0, 10);
 
 
-            const data =
-                await response.json();
+                if (!news.length) {
+
+                    newsStatus.innerHTML =
+                        "No se han encontrado noticias.";
+
+                    return;
+
+                }
 
 
-            if (
-                !data.success ||
-                !Array.isArray(data.news)
-            ) {
-
-                throw new Error(
-                    data.error ||
-                    "Invalid news response"
-                );
-
-            }
+                newsStatus.innerHTML =
+                    `Se han encontrado ${news.length} noticias.`;
 
 
-            if (data.news.length === 0) {
+                /* =========================
+                   MOSTRAR NOTICIAS
+                ========================== */
 
-                status.textContent =
-                    "No news found.";
+                news.forEach(
+                    (article, index) => {
 
-                return;
-
-            }
-
-
-            status.textContent =
-                `${data.news.length} news results found.`;
+                        const card =
+                            document.createElement("div");
 
 
-            results.innerHTML =
-                data.news
-                    .slice(0, 10)
-                    .map((article, index) => {
+                        card.style.cssText = `
+                            padding:16px;
+                            border:1px solid #ddd;
+                            border-radius:10px;
+                            cursor:pointer;
+                            background:#fff;
+                            transition:0.15s;
+                        `;
 
-                        return `
 
-                            <div
-                                class="news-result"
-                                data-index="${index}"
-                                style="
-                                    padding: 18px;
-                                    border: 1px solid #ddd;
-                                    border-radius: 10px;
-                                    cursor: pointer;
-                                    transition: 0.15s;
-                                    background: #fff;
-                                "
-                            >
+                        const source =
+                            typeof article.source === "object"
+                                ? (
+                                    article.source?.name ||
+                                    ""
+                                )
+                                : (
+                                    article.source ||
+                                    ""
+                                );
 
-                                <div
-                                    style="
-                                        display: flex;
-                                        gap: 15px;
-                                    "
-                                >
+
+                        const title =
+                            article.title ||
+                            "Sin título";
+
+
+                        const snippet =
+                            article.snippet ||
+                            "";
+
+
+                        const date =
+                            article.date ||
+                            "";
+
+
+                        const link =
+                            article.link ||
+                            "";
+
+
+                        const thumbnail =
+                            article.thumbnail ||
+                            "";
+
+
+                        card.innerHTML = `
+
+                            <div style="
+                                display:flex;
+                                gap:15px;
+                                align-items:flex-start;
+                            ">
+
+                                ${
+                                    thumbnail
+                                    ? `
+                                        <img
+                                            src="${thumbnail}"
+                                            style="
+                                                width:120px;
+                                                height:80px;
+                                                object-fit:cover;
+                                                border-radius:7px;
+                                                flex-shrink:0;
+                                            "
+                                        >
+                                      `
+                                    : ""
+                                }
+
+                                <div style="
+                                    flex:1;
+                                ">
+
+                                    <div style="
+                                        font-size:12px;
+                                        color:#777;
+                                        margin-bottom:5px;
+                                    ">
+                                        #${index + 1}
+                                        ${
+                                            source
+                                            ? " · " + source
+                                            : ""
+                                        }
+                                        ${
+                                            date
+                                            ? " · " + date
+                                            : ""
+                                        }
+                                    </div>
+
+
+                                    <h3 style="
+                                        margin:0 0 7px 0;
+                                        font-size:17px;
+                                    ">
+                                        ${title}
+                                    </h3>
+
 
                                     ${
-                                        article.thumbnail
-                                            ? `
-                                                <img
-                                                    src="${escapeHtml(article.thumbnail)}"
-                                                    style="
-                                                        width: 120px;
-                                                        height: 80px;
-                                                        object-fit: cover;
-                                                        border-radius: 7px;
-                                                    "
-                                                >
-                                            `
-                                            : ""
+                                        snippet
+                                        ? `
+                                            <p style="
+                                                margin:0;
+                                                color:#555;
+                                                line-height:1.5;
+                                            ">
+                                                ${snippet}
+                                            </p>
+                                          `
+                                        : ""
                                     }
-
-
-                                    <div>
-
-                                        <h3
-                                            style="
-                                                margin: 0 0 7px;
-                                            "
-                                        >
-                                            ${escapeHtml(article.title)}
-                                        </h3>
-
-
-                                        <div
-                                            style="
-                                                font-size: 13px;
-                                                color: #777;
-                                            "
-                                        >
-
-                                            <strong>
-                                                ${escapeHtml(article.source)}
-                                            </strong>
-
-                                            ${
-                                                article.date
-                                                    ? `
-                                                        ·
-                                                        ${escapeHtml(article.date)}
-                                                    `
-                                                    : ""
-                                            }
-
-                                        </div>
-
-
-                                        ${
-                                            article.snippet
-                                                ? `
-                                                    <p
-                                                        style="
-                                                            margin: 8px 0 0;
-                                                            color: #555;
-                                                        "
-                                                    >
-                                                        ${escapeHtml(article.snippet)}
-                                                    </p>
-                                                `
-                                                : ""
-                                        }
-
-                                    </div>
 
                                 </div>
 
@@ -822,167 +761,193 @@ document
 
                         `;
 
-                    })
-                    .join("");
+
+                        card.addEventListener(
+                            "mouseenter",
+                            () => {
+
+                                card.style.borderColor =
+                                    "#999";
+
+                            }
+                        );
 
 
-            document
-                .querySelectorAll(".news-result")
-                .forEach(element => {
+                        card.addEventListener(
+                            "mouseleave",
+                            () => {
 
-                    element.addEventListener(
-                        "click",
-                        () => {
+                                card.style.borderColor =
+                                    "#ddd";
 
-                            const index =
-                                Number(
-                                    element.dataset.index
-                                );
+                            }
+                        );
 
 
-                            selectNews(
-                                data.news[index]
-                            );
+                        card.addEventListener(
+                            "click",
+                            () => {
 
-                        }
-                    );
+                                /* =========================
+                                   GUARDAR NOTICIA
+                                ========================== */
 
-                });
+                                selectedNewsData = {
 
+                                    title:
+                                        title,
 
-        } catch (error) {
+                                    source:
+                                        source,
 
-            console.error(
-                "News search error:",
-                error
-            );
+                                    date:
+                                        date,
 
+                                    snippet:
+                                        snippet,
 
-            status.textContent =
-                `Error: ${error.message}`;
+                                    link:
+                                        link,
 
+                                    thumbnail:
+                                        thumbnail
 
-        } finally {
-
-            button.disabled = false;
-
-            button.textContent =
-                "Search News";
-
-        }
-
-    });
+                                };
 
 
+                                /* =========================
+                                   MOSTRAR SELECCIONADA
+                                ========================== */
 
-/* =========================================================
-   SELECT NEWS
-   ========================================================= */
+                                selectedNewsInfo.innerHTML = `
 
-function selectNews(article) {
+                                    <p>
+                                        <strong>Título:</strong>
+                                        ${title}
+                                    </p>
 
-    selectedNews =
-        article;
+                                    ${
+                                        source
+                                        ? `
+                                            <p>
+                                                <strong>Fuente:</strong>
+                                                ${source}
+                                            </p>
+                                          `
+                                        : ""
+                                    }
+
+                                    ${
+                                        date
+                                        ? `
+                                            <p>
+                                                <strong>Fecha:</strong>
+                                                ${date}
+                                            </p>
+                                          `
+                                        : ""
+                                    }
+
+                                    ${
+                                        snippet
+                                        ? `
+                                            <p>
+                                                <strong>Resumen:</strong>
+                                                ${snippet}
+                                            </p>
+                                          `
+                                        : ""
+                                    }
+
+                                    ${
+                                        link
+                                        ? `
+                                            <p>
+                                                <strong>Enlace:</strong>
+                                                <a
+                                                    href="${link}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Ver noticia original
+                                                </a>
+                                            </p>
+                                          `
+                                        : ""
+                                    }
+
+                                `;
 
 
-    const section =
-        document.getElementById(
-            "selectedNewsSection"
-        );
+                                selectedNews.style.display =
+                                    "block";
 
 
-    const container =
-        document.getElementById(
-            "selectedNews"
-        );
+                                newsPromptContainer.style.display =
+                                    "block";
 
 
-    section.style.display =
-        "block";
+                                /* Scroll hacia la selección */
+
+                                selectedNews.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center"
+                                });
+
+                            }
+                        );
 
 
-    container.innerHTML = `
+                        newsList.appendChild(card);
 
-        <h3>
-            ${escapeHtml(article.title)}
-        </h3>
+                    }
+                );
 
 
-        <p
-            style="
-                color: #777;
-            "
-        >
+            } catch (error) {
 
-            <strong>
-                ${escapeHtml(article.source || "Unknown source")}
-            </strong>
+                console.error(
+                    "SERPAPI ERROR:",
+                    error
+                );
 
-            ${
-                article.date
-                    ? `
-                        ·
-                        ${escapeHtml(article.date)}
-                    `
-                    : ""
+
+                newsStatus.innerHTML =
+                    "ERROR: " +
+                    error.message;
+
+            } finally {
+
+                searchNewsBtn.disabled = false;
+
+                searchNewsBtn.textContent =
+                    "Buscar últimas noticias";
+
             }
 
-        </p>
-
-
-        ${
-            article.snippet
-                ? `
-                    <p>
-                        ${escapeHtml(article.snippet)}
-                    </p>
-                `
-                : ""
         }
-
-
-        ${
-            article.link
-                ? `
-                    <a
-                        href="${escapeHtml(article.link)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Open original article
-                    </a>
-                `
-                : ""
-        }
-
-    `;
-
-
-    section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-
-}
+    );
 
 
 
-/* =========================================================
-   GENERATE ARTICLE FROM SELECTED NEWS
-   ========================================================= */
+    /* =========================================================
+       GENERAR ARTÍCULO A PARTIR DE NOTICIA
+    ========================================================== */
 
-document
-    .getElementById(
-        "generateNewsArticleButton"
-    )
-    .addEventListener(
+    const generateNewsArticleBtn =
+        document.getElementById(
+            "generateNewsArticleBtn"
+        );
+
+
+    generateNewsArticleBtn.addEventListener(
         "click",
         async () => {
 
-            if (!selectedNews) {
+            if (!selectedNewsData) {
 
                 alert(
-                    "Please select a news article first."
+                    "Selecciona primero una noticia."
                 );
 
                 return;
@@ -992,67 +957,52 @@ document
 
             const prompt =
                 document
-                    .getElementById(
-                        "newsPrompt"
-                    )
+                    .getElementById("newsPrompt")
                     .value
                     .trim();
 
 
-            const button =
-                document.getElementById(
-                    "generateNewsArticleButton"
+            if (!prompt) {
+
+                alert(
+                    "Escribe las instrucciones adicionales para la IA."
                 );
 
+                return;
 
-            const status =
-                document.getElementById(
-                    "aiStatus"
-                );
+            }
 
 
-            status.textContent =
-                "";
+            generateNewsArticleBtn.disabled =
+                true;
 
 
-            logAI(
-                "Starting article generation from news..."
-            );
+            generateNewsArticleBtn.textContent =
+                "Generando artículo...";
 
 
-            logAI(
-                `Selected news: ${selectedNews.title}`
-            );
-
-
-            logAI(
-                `Source: ${selectedNews.source || "Unknown"}`
-            );
-
-
-            button.disabled = true;
-
-            button.textContent =
-                "Generating...";
+            newsStatus.innerHTML =
+                "Enviando prompt + información de la noticia a la IA...";
 
 
             try {
 
-                /*
-                 * =================================================
-                 * The API receives TWO separate pieces of data:
-                 *
-                 * prompt = user's instructions
-                 *
-                 * info = information obtained from Google News
-                 *
-                 * =================================================
-                 */
+                /* =========================
+                   ENVÍO AL MISMO ENDPOINT
+                   
+                   {
+                       prompt: "...",
+                       info: {
+                           ...
+                       }
+                   }
+                ========================== */
 
                 const response =
                     await fetch(
                         "/createArticle",
                         {
+
                             method: "POST",
 
                             headers: {
@@ -1062,26 +1012,11 @@ document
 
                             body: JSON.stringify({
 
-                                prompt: prompt,
+                                prompt:
+                                    prompt,
 
-                                info: {
-
-                                    title:
-                                        selectedNews.title,
-
-                                    source:
-                                        selectedNews.source,
-
-                                    date:
-                                        selectedNews.date,
-
-                                    snippet:
-                                        selectedNews.snippet,
-
-                                    link:
-                                        selectedNews.link
-
-                                }
+                                info:
+                                    selectedNewsData
 
                             })
 
@@ -1089,73 +1024,106 @@ document
                     );
 
 
-                logAI(
-                    `Response received: HTTP ${response.status}`
-                );
+                const data =
+                    await response.json();
 
 
                 if (!response.ok) {
 
                     throw new Error(
-                        `Server returned HTTP ${response.status}`
+                        data.error ||
+                        "Error generando el artículo"
                     );
 
                 }
 
 
-                const article =
-                    await response.json();
-
-
-                logAI(
-                    "Article generated successfully."
+                console.log(
+                    "ARTÍCULO GENERADO DESDE NOTICIA:",
+                    data
                 );
 
 
-                logAI(
-                    `Title: ${article.title || "N/A"}`
-                );
+                newsStatus.innerHTML =
+                    "Artículo generado correctamente.";
 
 
-                logAI(
-                    `Content length: ${(article.content || "").length} characters`
-                );
+                /* =========================
+                   RELLENAR FORMULARIO
+                ========================== */
+
+                document.getElementById("title").value =
+                    data.title || "";
 
 
-                updateArticleForm(
-                    article
-                );
+                document.getElementById("slug").value =
+                    data.slug || "";
 
 
-                logAI(
-                    "Article form updated successfully."
-                );
+                document.getElementById("excerpt").value =
+                    data.excerpt || "";
 
 
-                logAI(
-                    "Done."
-                );
+                document.getElementById("category").value =
+                    data.category || "";
+
+
+                /* =========================
+                   CONTENIDO TINYMCE
+                ========================== */
+
+                if (data.content) {
+
+                    const editor =
+                        tinymce.get("content");
+
+
+                    if (editor) {
+
+                        editor.setContent(
+                            data.content
+                        );
+
+                    }
+
+                }
+
+
+                /* =========================
+                   SCROLL AL FORMULARIO
+                ========================== */
+
+                document
+                    .getElementById("articleForm")
+                    .scrollIntoView({
+
+                        behavior: "smooth",
+
+                        block: "start"
+
+                    });
 
 
             } catch (error) {
 
-                logAI(
-                    `ERROR: ${error.message}`
-                );
-
-
                 console.error(
-                    "News article generation error:",
+                    "NEWS ARTICLE ERROR:",
                     error
                 );
 
 
+                newsStatus.innerHTML =
+                    "ERROR: " +
+                    error.message;
+
             } finally {
 
-                button.disabled = false;
+                generateNewsArticleBtn.disabled =
+                    false;
 
-                button.textContent =
-                    "Generate Article";
+
+                generateNewsArticleBtn.textContent =
+                    "Generar artículo con esta noticia";
 
             }
 
@@ -1163,40 +1131,4 @@ document
     );
 
 </script>
-
-
-
-<!-- =========================================================
-     TINYMCE
-     ========================================================= -->
-
-<script>
-
-tinymce.init({
-
-    selector: "#content",
-
-    height: 700,
-
-    menubar: true,
-
-    plugins: [
-        "lists",
-        "link",
-        "image",
-        "table",
-        "code",
-        "fullscreen",
-        "preview"
-    ],
-
-    toolbar:
-        "undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image table | code fullscreen preview"
-
-});
-
-</script>
-
-
-<%- include("partials/footer") %>
 ```
