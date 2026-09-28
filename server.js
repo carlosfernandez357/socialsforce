@@ -134,15 +134,27 @@ app.get("/article/:slug", async (req, res) => {
 
         const post = rows[0];
 
+        // Identificador de la cookie para este artículo
+        const viewCookie = `viewed_${post.id}`;
 
-        // Incrementar visitas
-        await db.query(`
-            UPDATE posts
-            SET views = views + 1
-            WHERE id = ?
-        `, [post.id]);
+        // Incrementar visitas solamente si no se ha visto
+        // este artículo durante las últimas 24 horas
+        if (!req.cookies[viewCookie]) {
 
-        post.views += 1;
+            await db.query(`
+                UPDATE posts
+                SET views = views + 1
+                WHERE id = ?
+            `, [post.id]);
+
+            post.views += 1;
+
+            res.cookie(viewCookie, "1", {
+                maxAge: 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                sameSite: "lax"
+            });
+        }
 
 
         // Contenido relacionado
@@ -197,7 +209,6 @@ app.get("/article/:slug", async (req, res) => {
         });
 
 
-        
     } catch (error) {
 
         console.error(error);
@@ -205,9 +216,6 @@ app.get("/article/:slug", async (req, res) => {
         res.status(500).send("Error al cargar el artículo");
     }
 });
-
-
-
 
 
 
