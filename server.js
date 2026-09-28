@@ -135,7 +135,7 @@ app.get("/article/:slug", async (req, res) => {
         const post = rows[0];
 
         // Identificador de la cookie para este artículo
-        const viewCookie = `viewed_${post.id}`;
+        const viewCookie = `cfrxrl_${post.id}`;
 
         // Incrementar visitas solamente si no se ha visto
         // este artículo durante las últimas 24 horas
