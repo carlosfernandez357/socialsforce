@@ -1,16 +1,24 @@
+```html
 <%- include("partials/header") %>
 <%- include("partials/sidebar") %>
 
 <main class="admin-main">
     <link rel="stylesheet" href="/css/admin.css">
+
     <div class="admin-page-header">
         <div>
             <h1>Create Article</h1>
             <p>Create articles manually or generate them with AI.</p>
         </div>
     </div>
+
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"></script>
+
     <div class="admin-create-layout">
+
+        <!-- ========================= -->
+        <!-- AI GENERATOR -->
+        <!-- ========================= -->
 
         <div class="admin-card">
 
@@ -22,12 +30,11 @@
 
                 <div class="admin-form-group">
                     <label>Topic</label>
+
                     <textarea
-                        type="text"
                         id="aiPrompt"
                         placeholder="Example: Best AI tools for SEO"
-                    >
-                    </textarea>
+                    ></textarea>
                 </div>
 
                 <button
@@ -38,13 +45,25 @@
                 </button>
 
             </form>
+
             <div class="admin-ai-status" id="aiStatus">
                 Waiting...
             </div>
-            <button type="button" class="admin-ai-clear" onclick="document.getElementById('aiStatus').innerHTML = ''">
+
+            <button
+                type="button"
+                class="admin-ai-clear"
+                onclick="document.getElementById('aiStatus').innerHTML = ''"
+            >
                 Clear Console
             </button>
+
         </div>
+
+
+        <!-- ========================= -->
+        <!-- ARTICLE INFORMATION -->
+        <!-- ========================= -->
 
         <div class="admin-card">
 
@@ -59,6 +78,7 @@
 
                 <div class="admin-form-group">
                     <label>Title</label>
+
                     <input
                         type="text"
                         name="title"
@@ -69,6 +89,7 @@
 
                 <div class="admin-form-group">
                     <label>Slug</label>
+
                     <input
                         type="text"
                         name="slug"
@@ -79,6 +100,7 @@
 
                 <div class="admin-form-group">
                     <label>Category</label>
+
                     <input
                         type="text"
                         name="category"
@@ -89,6 +111,7 @@
 
                 <div class="admin-form-group">
                     <label>Excerpt</label>
+
                     <textarea
                         name="excerpt"
                         id="excerpt"
@@ -98,6 +121,7 @@
 
                 <div class="admin-form-group">
                     <label>Featured Image</label>
+
                     <input
                         type="text"
                         name="image"
@@ -108,7 +132,11 @@
 
                 <div class="admin-form-group">
                     <label>Content (HTML)</label>
-                    <textarea name="content" id="content"></textarea>
+
+                    <textarea
+                        name="content"
+                        id="content"
+                    ></textarea>
                 </div>
 
                 <button
@@ -122,95 +150,710 @@
 
         </div>
 
+
+        <!-- ========================= -->
+        <!-- NEWS RESEARCH -->
+        <!-- ========================= -->
+
+        <div class="admin-card">
+
+            <div class="admin-card-header">
+                <h2>News Research</h2>
+
+                <p>
+                    Search recent news and use a selected article
+                    as information for the AI generator.
+                </p>
+            </div>
+
+            <form id="newsSearchForm">
+
+                <div class="admin-form-group">
+
+                    <label>Search News</label>
+
+                    <input
+                        type="text"
+                        id="newsQuery"
+                        placeholder="Example: OpenAI latest news"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    id="newsSearchButton"
+                    class="admin-primary-button"
+                >
+                    Search News
+                </button>
+
+            </form>
+
+
+            <!-- NEWS RESULTS -->
+
+            <div
+                id="newsResults"
+                style="margin-top: 20px;"
+            ></div>
+
+
+            <!-- SELECTED NEWS -->
+
+            <div
+                id="selectedNews"
+                style="display: none; margin-top: 25px;"
+            >
+
+                <div class="admin-card-header">
+                    <h3>Selected News</h3>
+                </div>
+
+                <div id="selectedNewsContent"></div>
+
+
+                <div class="admin-form-group">
+
+                    <label>
+                        Additional Prompt
+                    </label>
+
+                    <textarea
+                        id="newsPrompt"
+                        rows="6"
+                        placeholder="Example: Focus on the technical implications and explain the impact for developers."
+                    ></textarea>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="generateFromNews"
+                    class="admin-primary-button"
+                >
+                    Generate Article From News
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 
 </main>
 
+
 <script>
 
-document.getElementById("aiForm").addEventListener("submit", async e => {
+/* =========================================================
+   AI ARTICLE GENERATOR
+   ========================================================= */
 
-    e.preventDefault();
+document
+    .getElementById("aiForm")
+    .addEventListener("submit", async e => {
 
-    const prompt = document.getElementById("aiPrompt").value;
-    const button = e.target.querySelector("button");
-    const status = document.getElementById("aiStatus");
+        e.preventDefault();
 
-    // Función para escribir en la consola
-    function log(message) {
-        const time = new Date().toLocaleTimeString();
-        status.textContent += `\n[${time}] ${message}`;
-        status.scrollTop = status.scrollHeight;
-    }
+        const prompt =
+            document.getElementById("aiPrompt").value;
 
-    // Limpiar consola
-    status.textContent = "";
+        const button =
+            e.target.querySelector("button");
 
-    log("Starting article generation...");
-    log(`Prompt length: ${prompt.length} characters`);
+        const status =
+            document.getElementById("aiStatus");
 
-    button.disabled = true;
-    button.textContent = "Generating...";
 
-    try {
+        function log(message) {
 
-        log("Sending request to /createArticle...");
+            const time =
+                new Date().toLocaleTimeString();
 
-        const response = await fetch("/createArticle", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ prompt })
-        });
+            status.textContent +=
+                `\n[${time}] ${message}`;
 
-        log(`Response received: HTTP ${response.status}`);
-
-        if (!response.ok) {
-            throw new Error(`Server returned HTTP ${response.status}`);
+            status.scrollTop =
+                status.scrollHeight;
         }
 
-        log("Parsing response...");
 
-        const article = await response.json();
+        status.textContent = "";
 
-        log("Article generated successfully.");
-        log(`Title: ${article.title || "N/A"}`);
-        log(`Slug: ${article.slug || "N/A"}`);
-        log(`Category: ${article.category || "N/A"}`);
-        log(`Content length: ${(article.content || "").length} characters`);
+        log("Starting article generation...");
+        log(`Prompt length: ${prompt.length} characters`);
 
-        // Rellenar formulario
-        document.getElementById("title").value = article.title || "";
-        document.getElementById("slug").value = article.slug || "";
-        document.getElementById("excerpt").value = article.excerpt || "";
-        document.getElementById("category").value = article.category || "";
-        document.getElementById("content").value = article.content || "";
+        button.disabled = true;
+        button.textContent = "Generating...";
 
-        log("Form updated successfully.");
-        log("Done.");
 
-    } catch (err) {
+        try {
 
-        log(`ERROR: ${err.message}`);
-        console.error("Article generation error:", err);
+            log("Sending request to /createArticle...");
 
-    } finally {
+            const response =
+                await fetch("/createArticle", {
 
-        button.disabled = false;
-        button.textContent = "Generate Article";
+                    method: "POST",
 
-    }
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-});
+                    body: JSON.stringify({
+                        prompt
+                    })
+
+                });
+
+
+            log(
+                `Response received: HTTP ${response.status}`
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Server returned HTTP ${response.status}`
+                );
+
+            }
+
+
+            const article =
+                await response.json();
+
+
+            log(
+                "Article generated successfully."
+            );
+
+            log(
+                `Title: ${article.title || "N/A"}`
+            );
+
+            log(
+                `Slug: ${article.slug || "N/A"}`
+            );
+
+            log(
+                `Category: ${article.category || "N/A"}`
+            );
+
+            log(
+                `Content length: ${(article.content || "").length} characters`
+            );
+
+
+            document.getElementById("title").value =
+                article.title || "";
+
+            document.getElementById("slug").value =
+                article.slug || "";
+
+            document.getElementById("excerpt").value =
+                article.excerpt || "";
+
+            document.getElementById("category").value =
+                article.category || "";
+
+            document.getElementById("content").value =
+                article.content || "";
+
+
+            if (window.tinymce) {
+
+                tinymce
+                    .get("content")
+                    ?.setContent(article.content || "");
+
+            }
+
+
+            log("Form updated successfully.");
+            log("Done.");
+
+
+        } catch (err) {
+
+            log(`ERROR: ${err.message}`);
+
+            console.error(
+                "Article generation error:",
+                err
+            );
+
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent =
+                "Generate Article";
+
+        }
+
+    });
+
+
+/* =========================================================
+   NEWS SEARCH
+   ========================================================= */
+
+let selectedNews = null;
+
+
+document
+    .getElementById("newsSearchForm")
+    .addEventListener("submit", async e => {
+
+        e.preventDefault();
+
+
+        const query =
+            document.getElementById("newsQuery").value.trim();
+
+        const button =
+            document.getElementById("newsSearchButton");
+
+        const results =
+            document.getElementById("newsResults");
+
+
+        if (!query)
+            return;
+
+
+        button.disabled = true;
+        button.textContent = "Searching...";
+
+        results.innerHTML =
+            "<p>Searching news...</p>";
+
+
+        try {
+
+            const response =
+                await fetch("/admin/news/search", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        query,
+                        limit: 10
+                    })
+
+                });
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !data.success ||
+                !Array.isArray(data.news) ||
+                data.news.length === 0
+            ) {
+
+                results.innerHTML =
+                    "<p>No news found.</p>";
+
+                return;
+
+            }
+
+
+            results.innerHTML =
+                data.news
+                    .map((article, index) => `
+
+                        <div
+                            class="news-result"
+                            data-index="${index}"
+                            style="
+                                padding: 15px;
+                                margin-bottom: 10px;
+                                border: 1px solid #ddd;
+                                border-radius: 8px;
+                                cursor: pointer;
+                            "
+                        >
+
+                            <h3>
+                                ${escapeHtml(article.title || "Untitled")}
+                            </h3>
+
+                            <div>
+                                <strong>
+                                    ${escapeHtml(article.source || "")}
+                                </strong>
+
+                                ${
+                                    article.date
+                                        ? ` · ${escapeHtml(article.date)}`
+                                        : ""
+                                }
+                            </div>
+
+                            <p>
+                                ${escapeHtml(article.snippet || "")}
+                            </p>
+
+                        </div>
+
+                    `)
+                    .join("");
+
+
+            document
+                .querySelectorAll(".news-result")
+                .forEach(element => {
+
+                    element.addEventListener(
+                        "click",
+                        () => {
+
+                            const index =
+                                Number(
+                                    element.dataset.index
+                                );
+
+                            selectNews(
+                                data.news[index]
+                            );
+
+                        }
+                    );
+
+                });
+
+
+        } catch (error) {
+
+            console.error(
+                "News search error:",
+                error
+            );
+
+            results.innerHTML =
+                `<p>Error searching news: ${escapeHtml(error.message)}</p>`;
+
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent =
+                "Search News";
+
+        }
+
+    });
+
+
+/* =========================================================
+   SELECT NEWS
+   ========================================================= */
+
+function selectNews(article) {
+
+    selectedNews = article;
+
+
+    document.getElementById(
+        "selectedNews"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "selectedNewsContent"
+    ).innerHTML = `
+
+        <div
+            style="
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+            "
+        >
+
+            <h3>
+                ${escapeHtml(article.title || "")}
+            </h3>
+
+            <p>
+                <strong>Source:</strong>
+                ${escapeHtml(article.source || "")}
+            </p>
+
+            ${
+                article.date
+                    ? `
+                        <p>
+                            <strong>Date:</strong>
+                            ${escapeHtml(article.date)}
+                        </p>
+                    `
+                    : ""
+            }
+
+            <p>
+                ${escapeHtml(article.snippet || "")}
+            </p>
+
+            ${
+                article.link
+                    ? `
+                        <a
+                            href="${escapeAttribute(article.link)}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Open original article
+                        </a>
+                    `
+                    : ""
+            }
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   GENERATE ARTICLE FROM NEWS
+   ========================================================= */
+
+document
+    .getElementById("generateFromNews")
+    .addEventListener("click", async () => {
+
+        if (!selectedNews) {
+
+            alert("Select a news article first.");
+
+            return;
+
+        }
+
+
+        const prompt =
+            document
+                .getElementById("newsPrompt")
+                .value
+                .trim();
+
+
+        const button =
+            document.getElementById(
+                "generateFromNews"
+            );
+
+
+        const status =
+            document.getElementById(
+                "aiStatus"
+            );
+
+
+        button.disabled = true;
+        button.textContent =
+            "Generating...";
+
+
+        status.textContent = "";
+
+
+        function log(message) {
+
+            const time =
+                new Date().toLocaleTimeString();
+
+            status.textContent +=
+                `\n[${time}] ${message}`;
+
+            status.scrollTop =
+                status.scrollHeight;
+
+        }
+
+
+        try {
+
+            log("Starting article generation from news...");
+
+            log(
+                `News: ${selectedNews.title}`
+            );
+
+            log(
+                `Source: ${selectedNews.source || "Unknown"}`
+            );
+
+
+            const response =
+                await fetch("/createArticle", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        prompt: prompt,
+
+                        info: {
+
+                            title:
+                                selectedNews.title,
+
+                            source:
+                                selectedNews.source,
+
+                            date:
+                                selectedNews.date,
+
+                            snippet:
+                                selectedNews.snippet,
+
+                            link:
+                                selectedNews.link
+
+                        }
+
+                    })
+
+                });
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Server returned HTTP ${response.status}`
+                );
+
+            }
+
+
+            const article =
+                await response.json();
+
+
+            log(
+                "Article generated successfully."
+            );
+
+
+            document.getElementById("title").value =
+                article.title || "";
+
+            document.getElementById("slug").value =
+                article.slug || "";
+
+            document.getElementById("excerpt").value =
+                article.excerpt || "";
+
+            document.getElementById("category").value =
+                article.category || "";
+
+            document.getElementById("content").value =
+                article.content || "";
+
+
+            if (window.tinymce) {
+
+                tinymce
+                    .get("content")
+                    ?.setContent(
+                        article.content || ""
+                    );
+
+            }
+
+
+            log("Article form updated.");
+            log("Done.");
+
+
+        } catch (error) {
+
+            log(
+                `ERROR: ${error.message}`
+            );
+
+            console.error(
+                "News article generation error:",
+                error
+            );
+
+
+        } finally {
+
+            button.disabled = false;
+
+            button.textContent =
+                "Generate Article From News";
+
+        }
+
+    });
+
+
+/* =========================================================
+   HTML ESCAPING
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+    return escapeHtml(value);
+
+}
 
 </script>
 
+
 <script>
+
 tinymce.init({
+
     selector: "#content",
+
     height: 700,
+
     menubar: true,
+
     plugins: [
         "lists",
         "link",
@@ -220,9 +863,14 @@ tinymce.init({
         "fullscreen",
         "preview"
     ],
+
     toolbar:
         "undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image table | code fullscreen preview"
+
 });
+
 </script>
 
+
 <%- include("partials/footer") %>
+```
