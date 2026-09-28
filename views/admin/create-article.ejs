@@ -529,7 +529,7 @@
                 return;
 
             }
-
+            prompt = "Instrucciones: " + prompt + "\n\n\n Info: \n\n"+ selectedNews
 
             generateNewsArticleBtn.disabled =
                 true;
@@ -558,9 +558,7 @@
 
                             body: JSON.stringify({
 
-                                prompt: prompt,
-
-                                info: selectedNews
+                                prompt: prompt
 
                             })
 
