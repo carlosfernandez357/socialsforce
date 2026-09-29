@@ -1583,3 +1583,145 @@ select {
         grid-template-columns: 1fr;
     }
 }
+
+.admin-live-meta {
+    font-size: 13px;
+    color: #666;
+}
+
+.admin-live-shell {
+    padding: 18px;
+}
+
+.admin-live-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #ececec;
+    padding-bottom: 10px;
+}
+
+.admin-live-tab {
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    background: #fff;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.admin-live-tab.active {
+    background: #171717;
+    color: #fff;
+    border-color: #171717;
+}
+
+.admin-live-pane {
+    display: none;
+}
+
+.admin-live-pane.active {
+    display: block;
+}
+
+.admin-live-filters {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, minmax(130px, 1fr)) auto;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.admin-live-input {
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-size: 12px;
+}
+
+.admin-live-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #555;
+}
+
+.admin-live-summary {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.admin-live-table-full td small {
+    color: #999;
+}
+
+.admin-live-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #f3f3f3;
+    font-size: 10px;
+    color: #444;
+}
+
+.admin-live-pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.admin-live-actions-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 14px;
+}
+
+.admin-live-radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+.admin-live-full {
+    width: 100%;
+}
+
+.admin-live-help {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #777;
+}
+
+.admin-live-action-row {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-live-log-xl {
+    min-height: 380px;
+    max-height: none;
+}
+
+@media (max-width: 1050px) {
+    .admin-live-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-live-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-live-filters {
+        grid-template-columns: 1fr;
+    }
+}

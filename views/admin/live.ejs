@@ -1,0 +1,311 @@
+<%- include("partials/header") %>
+<%- include("partials/sidebar") %>
+
+<main class="admin-main">
+    <link rel="stylesheet" href="/css/admin.css">
+
+    <div class="admin-page-header">
+        <div>
+            <h1>Live clients</h1>
+            <p>Supervisión en tiempo real, búsqueda avanzada y acciones remotas.</p>
+        </div>
+        <strong id="live-meta" class="admin-live-meta">0 conectados</strong>
+    </div>
+
+    <section class="admin-card admin-live-shell">
+        <div class="admin-live-tabs" id="live-tabs">
+            <button type="button" class="admin-live-tab active" data-tab="visitors">Visitantes</button>
+            <button type="button" class="admin-live-tab" data-tab="actions">Acciones</button>
+            <button type="button" class="admin-live-tab" data-tab="results">Resultados</button>
+        </div>
+
+        <div class="admin-live-pane active" data-pane="visitors">
+            <div class="admin-live-filters">
+                <input id="filter-search" type="text" placeholder="Buscar por ID, IP, página, título, user-agent" class="admin-live-input" />
+                <select id="filter-platform" class="admin-select">
+                    <option value="">Plataforma</option>
+                    <option value="Windows">Windows</option>
+                    <option value="macOS">macOS</option>
+                    <option value="Linux">Linux</option>
+                    <option value="Android">Android</option>
+                    <option value="iOS">iOS</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="filter-browser" class="admin-select">
+                    <option value="">Navegador</option>
+                    <option value="Chrome">Chrome</option>
+                    <option value="Safari">Safari</option>
+                    <option value="Firefox">Firefox</option>
+                    <option value="Edge">Edge</option>
+                    <option value="Opera">Opera</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="filter-device" class="admin-select">
+                    <option value="">Dispositivo</option>
+                    <option value="Desktop">Desktop</option>
+                    <option value="Mobile">Mobile</option>
+                    <option value="Tablet">Tablet</option>
+                </select>
+                <label class="admin-live-check"><input id="filter-visible" type="checkbox" /> Visible</label>
+            </div>
+
+            <div class="admin-live-summary" id="live-summary"></div>
+
+            <div class="admin-live-table-wrap">
+                <table class="admin-live-table admin-live-table-full">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Página</th>
+                            <th>Plataforma</th>
+                            <th>Navegador</th>
+                            <th>Dispositivo</th>
+                            <th>IP</th>
+                            <th>Última actividad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="live-table-body">
+                        <tr><td colspan="7" class="admin-empty">Esperando conexiones...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-live-pager">
+                <button id="page-prev" type="button" class="admin-action-button">Anterior</button>
+                <span id="page-indicator">Página 1</span>
+                <button id="page-next" type="button" class="admin-action-button">Siguiente</button>
+            </div>
+        </div>
+
+        <div class="admin-live-pane" data-pane="actions">
+            <div class="admin-live-actions-grid">
+                <div>
+                    <h3>Objetivo</h3>
+                    <div class="admin-live-radio-list">
+                        <label><input type="radio" name="target-mode" value="single" checked /> Usuario individual</label>
+                        <label><input type="radio" name="target-mode" value="filtered" /> Usuarios filtrados</label>
+                        <label><input type="radio" name="target-mode" value="all" /> Todos los usuarios</label>
+                    </div>
+                    <select id="action-single-target" class="admin-select admin-live-full"></select>
+                    <div class="admin-live-help" id="action-target-help"></div>
+                </div>
+
+                <div>
+                    <h3>Comando JS</h3>
+                    <textarea id="action-code" class="admin-live-code" placeholder="return { href: location.href, title: document.title };"></textarea>
+                    <div class="admin-live-action-row">
+                        <button id="action-run" type="button" class="admin-primary-button">Ejecutar</button>
+                        <button id="action-clear" type="button" class="admin-action-button">Limpiar consola</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-live-pane" data-pane="results">
+            <pre id="result-log" class="admin-live-log admin-live-log-xl"></pre>
+        </div>
+    </section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        (function () {
+            if (typeof window.io !== "function") return;
+            var state = {
+                clients: [],
+                filtered: [],
+                page: 1,
+                pageSize: 12
+            };
+
+            var el = {
+                meta: document.getElementById("live-meta"),
+                search: document.getElementById("filter-search"),
+                platform: document.getElementById("filter-platform"),
+                browser: document.getElementById("filter-browser"),
+                device: document.getElementById("filter-device"),
+                visible: document.getElementById("filter-visible"),
+                summary: document.getElementById("live-summary"),
+                body: document.getElementById("live-table-body"),
+                pageIndicator: document.getElementById("page-indicator"),
+                pagePrev: document.getElementById("page-prev"),
+                pageNext: document.getElementById("page-next"),
+                tabs: document.getElementById("live-tabs"),
+                singleTarget: document.getElementById("action-single-target"),
+                targetHelp: document.getElementById("action-target-help"),
+                code: document.getElementById("action-code"),
+                run: document.getElementById("action-run"),
+                clear: document.getElementById("action-clear"),
+                log: document.getElementById("result-log")
+            };
+
+            function esc(value) {
+                return String(value || "").replace(/[&<>"']/g, function (ch) {
+                    return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+                });
+            }
+
+            function appendLog(text) {
+                var line = "[" + new Date().toLocaleTimeString() + "] " + text;
+                el.log.textContent = (line + "\n" + el.log.textContent).slice(0, 20000);
+            }
+
+            function activeMode() {
+                var checked = document.querySelector('input[name="target-mode"]:checked');
+                return checked ? checked.value : "single";
+            }
+
+            function switchPane(tabName) {
+                document.querySelectorAll(".admin-live-tab").forEach(function (tab) {
+                    tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
+                });
+                document.querySelectorAll(".admin-live-pane").forEach(function (pane) {
+                    pane.classList.toggle("active", pane.getAttribute("data-pane") === tabName);
+                });
+            }
+
+            function filterClients() {
+                var query = (el.search.value || "").trim().toLowerCase();
+                var platform = el.platform.value;
+                var browser = el.browser.value;
+                var device = el.device.value;
+                var mustVisible = el.visible.checked;
+
+                state.filtered = state.clients.filter(function (c) {
+                    if (platform && c.platform !== platform) return false;
+                    if (browser && c.browser !== browser) return false;
+                    if (device && c.device !== device) return false;
+                    if (mustVisible && !c.visible) return false;
+                    if (!query) return true;
+                    var haystack = [c.id, c.ip, c.page, c.title, c.userAgent, c.platform, c.browser, c.device].join(" ").toLowerCase();
+                    return haystack.indexOf(query) !== -1;
+                });
+                var maxPage = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+                if (state.page > maxPage) state.page = maxPage;
+                render();
+            }
+
+            function renderTargets() {
+                var options = state.clients.map(function (c) {
+                    return '<option value="' + esc(c.id) + '">' + esc(c.id + " · " + c.platform + " · " + (c.page || "")) + '</option>';
+                }).join("");
+                el.singleTarget.innerHTML = options || '<option value="">Sin clientes</option>';
+
+                var mode = activeMode();
+                if (mode === "single") {
+                    el.singleTarget.disabled = false;
+                    el.targetHelp.textContent = "Se ejecutará sobre el cliente seleccionado.";
+                } else if (mode === "filtered") {
+                    el.singleTarget.disabled = true;
+                    el.targetHelp.textContent = "Se ejecutará sobre " + state.filtered.length + " cliente(s) filtrados.";
+                } else {
+                    el.singleTarget.disabled = true;
+                    el.targetHelp.textContent = "Se ejecutará sobre todos los clientes conectados.";
+                }
+            }
+
+            function renderTable() {
+                var start = (state.page - 1) * state.pageSize;
+                var pageRows = state.filtered.slice(start, start + state.pageSize);
+                if (!pageRows.length) {
+                    el.body.innerHTML = '<tr><td colspan="7" class="admin-empty">No hay resultados para los filtros actuales.</td></tr>';
+                } else {
+                    el.body.innerHTML = pageRows.map(function (c) {
+                        return "<tr>"
+                            + "<td><code>" + esc(c.id) + "</code></td>"
+                            + "<td><strong>" + esc(c.page) + "</strong><br><small>" + esc(c.title) + "</small></td>"
+                            + "<td><span class=\"admin-live-badge\">" + esc(c.platform) + "</span></td>"
+                            + "<td>" + esc(c.browser) + "</td>"
+                            + "<td>" + esc(c.device) + "</td>"
+                            + "<td>" + esc(c.ip) + "</td>"
+                            + "<td>" + esc(c.lastSeenAt) + "</td>"
+                            + "</tr>";
+                    }).join("");
+                }
+                var totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+                el.pageIndicator.textContent = "Página " + state.page + " de " + totalPages;
+                el.pagePrev.disabled = state.page <= 1;
+                el.pageNext.disabled = state.page >= totalPages;
+            }
+
+            function render() {
+                if (el.meta) el.meta.textContent = state.clients.length + " conectados";
+                if (el.summary) el.summary.textContent = state.filtered.length + " resultado(s) de " + state.clients.length + " cliente(s)";
+                renderTargets();
+                renderTable();
+            }
+
+            var socket = window.io("/", { path: "/socket.io", auth: { role: "admin" } });
+
+            socket.on("live:snapshot", function (payload) {
+                state.clients = payload && Array.isArray(payload.clients) ? payload.clients : [];
+                filterClients();
+            });
+
+            socket.on("live:command", function (payload) {
+                appendLog("comando " + (payload.commandId || "") + " enviado a " + (payload.count || 0) + " cliente(s) [" + (payload.target || "all") + "]");
+            });
+
+            socket.on("live:exec-result", function (payload) {
+                appendLog((payload.ok ? "ok" : "error") + " " + (payload.clientId || "") + ": " + (payload.output || ""));
+            });
+
+            [el.search, el.platform, el.browser, el.device, el.visible].forEach(function (node) {
+                node.addEventListener("input", function () {
+                    state.page = 1;
+                    filterClients();
+                });
+                node.addEventListener("change", function () {
+                    state.page = 1;
+                    filterClients();
+                });
+            });
+
+            el.pagePrev.addEventListener("click", function () {
+                state.page = Math.max(1, state.page - 1);
+                renderTable();
+            });
+
+            el.pageNext.addEventListener("click", function () {
+                var totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+                state.page = Math.min(totalPages, state.page + 1);
+                renderTable();
+            });
+
+            document.querySelectorAll('input[name="target-mode"]').forEach(function (radio) {
+                radio.addEventListener("change", renderTargets);
+            });
+
+            el.tabs.addEventListener("click", function (event) {
+                var btn = event.target.closest(".admin-live-tab");
+                if (!btn) return;
+                switchPane(btn.getAttribute("data-tab"));
+            });
+
+            el.run.addEventListener("click", function () {
+                var code = (el.code.value || "").trim();
+                if (!code) return;
+                var mode = activeMode();
+                if (mode === "single") {
+                    var target = el.singleTarget.value;
+                    if (!target) return;
+                    socket.emit("admin:run-js", { target: target, code: code });
+                } else if (mode === "filtered") {
+                    var targets = state.filtered.map(function (c) { return c.id; });
+                    if (!targets.length) return;
+                    socket.emit("admin:run-js", { targets: targets, code: code });
+                } else {
+                    socket.emit("admin:run-js", { target: "all", code: code });
+                }
+                switchPane("results");
+            });
+
+            el.clear.addEventListener("click", function () {
+                el.log.textContent = "";
+            });
+
+            filterClients();
+        })();
+    </script>
+</main>
+
+<%- include("partials/footer") %>

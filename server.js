@@ -49,14 +49,39 @@ function parseCookieHeader(cookieHeader) {
     return out;
 }
 
+function parseUserAgent(userAgent) {
+    const ua = String(userAgent || "");
+    const platform = /Windows/i.test(ua) ? "Windows"
+        : /Android/i.test(ua) ? "Android"
+        : /iPhone|iPad|iPod/i.test(ua) ? "iOS"
+        : /Macintosh|Mac OS X/i.test(ua) ? "macOS"
+        : /Linux/i.test(ua) ? "Linux"
+        : "Other";
+    const browser = /Edg\//i.test(ua) ? "Edge"
+        : /OPR\//i.test(ua) ? "Opera"
+        : /Chrome\//i.test(ua) ? "Chrome"
+        : /Safari\//i.test(ua) && !/Chrome\//i.test(ua) ? "Safari"
+        : /Firefox\//i.test(ua) ? "Firefox"
+        : "Other";
+    const device = /Mobile|Android|iPhone|iPod/i.test(ua) ? "Mobile"
+        : /iPad|Tablet/i.test(ua) ? "Tablet"
+        : "Desktop";
+    return { platform, browser, device };
+}
+
 function toClientSummary(socket, payload) {
     const now = new Date().toISOString();
     const forwarded = socket.handshake.headers["x-forwarded-for"];
     const ip = (Array.isArray(forwarded) ? forwarded[0] : String(forwarded || socket.handshake.address || "")).split(",")[0].trim();
+    const userAgent = String(socket.handshake.headers["user-agent"] || "");
+    const parsed = parseUserAgent(userAgent);
     return {
         id: socket.id,
         ip,
-        userAgent: String(socket.handshake.headers["user-agent"] || ""),
+        userAgent,
+        platform: parsed.platform,
+        browser: parsed.browser,
+        device: parsed.device,
         connectedAt: now,
         lastSeenAt: now,
         page: String(payload.page || ""),
@@ -837,17 +862,30 @@ io.on("connection", socket => {
             const body = payload && typeof payload === "object" ? payload : {};
             const code = String(body.code || "").trim();
             const target = String(body.target || "").trim();
+            const targets = Array.isArray(body.targets) ? body.targets.map(id => String(id || "").trim()).filter(Boolean) : [];
             if (!code) return;
             const commandId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
             const data = { commandId, code };
-            if (target && target !== "all") {
-                io.to(target).emit("client:exec-js", data);
+            let count = 0;
+            if (targets.length) {
+                targets.forEach(id => {
+                    if (!liveClients.has(id)) return;
+                    io.to(id).emit("client:exec-js", data);
+                    count++;
+                });
+            } else if (target && target !== "all") {
+                if (liveClients.has(target)) {
+                    io.to(target).emit("client:exec-js", data);
+                    count = 1;
+                }
             } else {
                 io.to("live-clients").emit("client:exec-js", data);
+                count = liveClients.size;
             }
             io.to("admin-room").emit("live:command", {
                 commandId,
-                target: target && target !== "all" ? target : "all",
+                target: targets.length ? "filtered" : target && target !== "all" ? target : "all",
+                count,
                 sentAt: new Date().toISOString()
             });
         });
@@ -939,6 +977,10 @@ app.get("/admin", requireAdmin, async (req, res) => {
         insights,
         jobsDone: req.query.jobs || null
     });
+});
+
+app.get("/admin/live", requireAdmin, (req, res) => {
+    res.render("admin/live");
 });
 
 // Recalcular estadísticas / similitudes manualmente

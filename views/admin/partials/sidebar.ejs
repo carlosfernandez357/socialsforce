@@ -10,7 +10,7 @@
 
             <a
                 href="/admin"
-                class="admin-nav-link active"
+                class="admin-nav-link"
             >
                 <span>⌂</span>
                 Dashboard
@@ -30,6 +30,14 @@
             >
                 <span>＋</span>
                 Create article
+            </a>
+
+            <a
+                href="/admin/live"
+                class="admin-nav-link"
+            >
+                <span>◉</span>
+                Live clients
             </a>
 
         </div>
@@ -84,3 +92,20 @@
     </nav>
 
 </aside>
+
+<script>
+    (function () {
+        var path = window.location.pathname;
+        var links = document.querySelectorAll("#admin-sidebar .admin-nav-link[href]");
+        var best = null;
+        links.forEach(function (link) {
+            link.classList.remove("active");
+            var href = link.getAttribute("href");
+            if (!href) return;
+            if (path === href || (href !== "/" && path.indexOf(href + "/") === 0)) {
+                if (!best || href.length > best.getAttribute("href").length) best = link;
+            }
+        });
+        if (best) best.classList.add("active");
+    })();
+</script>
