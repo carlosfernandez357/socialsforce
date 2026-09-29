@@ -52,6 +52,9 @@
 
     </div>
 
+    <!-- Reading analytics & recommendations -->
+    <%- include("partials/insights") %>
+
     <!-- Main dashboard -->
 
     <div class="admin-dashboard-grid">
@@ -416,6 +419,12 @@
 
         </div>
 
+        <% const dashAlerts = (typeof insights !== "undefined" && insights && insights.alerts) || []; %>
+        <% if (dashAlerts.length) { %>
+            <% dashAlerts.forEach(a => { %>
+            <div class="ins-alert <%= a.level %>"><strong><%= a.level === "error" ? "!" : a.level === "warning" ? "⚠" : "i" %></strong><span><%= a.text %></span></div>
+            <% }) %>
+        <% } else { %>
         <div class="admin-alert-empty">
 
             <span>✓</span>
@@ -431,6 +440,7 @@
             </div>
 
         </div>
+        <% } %>
 
     </section>
 

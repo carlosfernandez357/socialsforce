@@ -29,15 +29,7 @@ const crumbTitle = String(post.title || "").length > 50 ? String(post.title).sli
         rel="stylesheet"
     >
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W0JR7YHY4C"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-W0JR7YHY4C');
-    </script>
+    <%- include("partials/analytics") %>
 </head>
 
 <body>
@@ -139,11 +131,20 @@ const crumbTitle = String(post.title || "").length > 50 ? String(post.title).sli
 
                     <% } %>
 
-                    <article class="article-content">
+                    <article class="article-content" data-track-pid="<%= post.id %>" data-track-cat="<%= post.category || '' %>">
 
                         <%- post.content %>
 
                     </article>
+
+                    <% if (typeof postTopics !== "undefined" && postTopics && postTopics.length) { %>
+                    <nav class="article-topics" aria-label="Topics">
+                        <span class="article-topics-label">Topics:</span>
+                        <% postTopics.slice(0, 8).forEach(t => { %>
+                        <a href="/topic/<%= t.slug %>" class="sidebar-pill"><%= t.name %></a>
+                        <% }) %>
+                    </nav>
+                    <% } %>
 
 
                     <!-- RELATED CONTENT -->
@@ -174,9 +175,9 @@ const crumbTitle = String(post.title || "").length > 50 ? String(post.title).sli
 
                         <div class="related-posts-grid">
 
-                            <% relatedPosts.forEach(related => { %>
+                            <% relatedPosts.forEach((related, i) => { %>
 
-                            <article class="post-card">
+                            <article class="post-card" data-rec-pl="related" data-rec-pos="<%= i %>" data-pid="<%= related.id %>">
 
                                 <a href="/article/<%= related.slug %>" tabindex="-1" aria-hidden="true">
                                     <img
@@ -277,25 +278,6 @@ const crumbTitle = String(post.title || "").length > 50 ? String(post.title).sli
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- For You: guardar historial de lectura (solo en el navegador) -->
-    <script>
-    (function () {
-        try {
-            var cat = <%- JSON.stringify(post.category || "").replace(/</g, "\\u003c") %>;
-            var id = <%- Number(post.id) || 0 %>;
-            if (cat) {
-                var cats = JSON.parse(localStorage.getItem('sf_cats') || '[]');
-                cats.push(cat);
-                localStorage.setItem('sf_cats', JSON.stringify(cats.slice(-50)));
-            }
-            if (id) {
-                var seen = JSON.parse(localStorage.getItem('sf_seen') || '[]');
-                if (seen.indexOf(id) === -1) seen.push(id);
-                localStorage.setItem('sf_seen', JSON.stringify(seen.slice(-100)));
-            }
-        } catch (e) {}
-    })();
-    </script>
 
 </body>
 

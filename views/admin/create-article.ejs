@@ -97,6 +97,29 @@
                 </div>
 
                 <div class="admin-form-group">
+                    <label>Topics (recommendations)</label>
+                    <input
+                        type="text"
+                        name="topics"
+                        id="topics"
+                        placeholder="OpenAI:9, ChatGPT:7, AI regulation:4"
+                    >
+                    <small>
+                        Name:weight (1-10), separated by commas. Optional: if empty, tags are used.
+                    </small>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Evergreen (0 = news that expires fast, 10 = always relevant)</label>
+                    <input type="number" name="evergreen" id="evergreen" min="0" max="10" value="3">
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Depth (1 = short news, 10 = in-depth analysis)</label>
+                    <input type="number" name="depth" id="depth" min="1" max="10" value="5">
+                </div>
+
+                <div class="admin-form-group">
                     <label>Excerpt</label>
                     <textarea
                         name="excerpt"

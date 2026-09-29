@@ -1,0 +1,10 @@
+<%- include('page-start', { seo: {
+    title: pageTitle + ' - SocialsForce',
+    description: (typeof pageDescription !== 'undefined' ? pageDescription : pageTitle + ' of SocialsForce.'),
+    canonical: 'https://socialsforce.com/' + page,
+    robots: 'index, follow'
+} }) %>
+<main id="legal-page">
+    <article class="legal-page">
+        <h1><%= pageTitle %></h1>
+        <p class="legal-updated">Last updated: <%= legal.updated %></p>
