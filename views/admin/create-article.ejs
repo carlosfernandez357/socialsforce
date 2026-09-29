@@ -258,10 +258,61 @@
     const generateStatus = document.getElementById("newsGenerateStatus");
     let selectedNews = null;
 
+    function firstText(values) {
+        for (const value of values) {
+            if (typeof value === "string" && value.trim()) return value.trim();
+        }
+        return "";
+    }
+
+    function normalizeNews(item) {
+        const highlight = item && typeof item.highlight === "object" ? item.highlight : {};
+        const story = Array.isArray(item?.stories) && item.stories.length ? item.stories[0] : {};
+        const source = item?.source?.name || highlight?.source?.name || story?.source?.name || "";
+        const title = firstText([
+            item?.title,
+            highlight?.title,
+            story?.title
+        ]) || "Sin título";
+        const link = firstText([
+            item?.link,
+            highlight?.link,
+            story?.link,
+            item?.serpapi_link
+        ]);
+        const image = firstText([
+            item?.thumbnail,
+            item?.thumbnail_small,
+            highlight?.thumbnail,
+            highlight?.thumbnail_small,
+            story?.thumbnail,
+            story?.thumbnail_small
+        ]);
+        return {
+            raw: item,
+            title,
+            link,
+            source,
+            image,
+            date: firstText([item?.date, highlight?.date, story?.date]),
+            isoDate: firstText([item?.iso_date, highlight?.iso_date, story?.iso_date])
+        };
+    }
+
     function pickNews(item) {
-        selectedNews = item;
+        selectedNews = normalizeNews(item);
         selectedBox.style.display = "block";
-        selectedView.innerHTML = `<strong>${item.title || "Sin título"}</strong><br><small>${item.source?.name || ""}</small><br><a href="${item.link || "#"}" target="_blank">Abrir fuente</a>`;
+        selectedView.innerHTML = `
+            <div class="admin-news-picked">
+                ${selectedNews.image ? `<img src="${selectedNews.image}" alt="${selectedNews.title}" class="admin-news-thumb">` : ""}
+                <div>
+                    <strong>${selectedNews.title}</strong><br>
+                    <small>${selectedNews.source || "Fuente desconocida"}</small><br>
+                    ${selectedNews.date ? `<small>${selectedNews.date}</small><br>` : ""}
+                    <a href="${selectedNews.link || "#"}" target="_blank">Abrir fuente</a>
+                </div>
+            </div>
+        `;
     }
 
     searchBtn.addEventListener("click", async () => {
@@ -277,8 +328,19 @@
                 status.textContent = "No se encontraron noticias.";
                 return;
             }
-            status.textContent = `Se encontraron ${items.length} noticias.`;
-            results.innerHTML = items.map((item, i) => `<div class="admin-news-item"><button type="button" data-news-index="${i}" class="admin-btn">Seleccionar</button> <strong>${item.title || "Sin título"}</strong></div>`).join("");
+            const normalized = items.map(normalizeNews);
+            status.textContent = `Se encontraron ${normalized.length} noticias.`;
+            results.innerHTML = normalized.map((item, i) => `
+                <div class="admin-news-item" data-news-index="${i}">
+                    ${item.image ? `<img src="${item.image}" alt="${item.title}" class="admin-news-thumb">` : ""}
+                    <div class="admin-news-item-main">
+                        <strong>${item.title}</strong>
+                        <small>${item.source || "Fuente desconocida"}</small>
+                        ${item.date ? `<small>${item.date}</small>` : ""}
+                    </div>
+                    <button type="button" data-news-index="${i}" class="admin-btn">Seleccionar</button>
+                </div>
+            `).join("");
             results.querySelectorAll("[data-news-index]").forEach(btn => {
                 btn.addEventListener("click", () => pickNews(items[Number(btn.getAttribute("data-news-index"))]));
             });
@@ -297,7 +359,7 @@
         generateBtn.textContent = "Generando...";
         generateStatus.textContent = "Generando artículo...";
         try {
-            const prompt = `Instrucciones: ${extraPrompt}\n\nInfo:\n${JSON.stringify(selectedNews, null, 2)}`;
+            const prompt = `Instrucciones: ${extraPrompt}\n\nNoticia normalizada:\n${JSON.stringify(selectedNews, null, 2)}\n\nPayload original API:\n${JSON.stringify(selectedNews.raw || {}, null, 2)}`;
             const response = await fetch("/createArticle", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
