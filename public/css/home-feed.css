@@ -1,0 +1,46 @@
+/* Home sidebar (distinta a la sidebar de artículos) */
+.home-with-sidebar{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;align-items:start}
+.home-sidebar{position:sticky;top:90px;display:flex;flex-direction:column;gap:20px}
+.hs-feed-cta{display:flex;gap:14px;align-items:center;padding:18px;border-radius:14px;background:linear-gradient(135deg,#2563EB,#7c3aed);color:#fff;text-decoration:none;transition:transform .2s}
+.hs-feed-cta:hover{transform:translateY(-2px)}
+.hs-feed-cta small{display:block;opacity:.85;font-size:.8rem}
+.hs-feed-icon{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center}
+.hs-box{background:#1A1A1A;border-radius:14px;padding:18px}
+.hs-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.hs-live{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:hsPulse 1.5s infinite}
+@keyframes hsPulse{50%{opacity:.3}}
+.hs-timeline{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid #2a2a2a}
+.hs-timeline li{position:relative;padding:0 0 14px 10px}
+.hs-timeline li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:#3B82F6}
+.hs-timeline time{display:block;font-size:.72rem;color:#60A5FA;font-weight:600}
+.hs-timeline a,.hs-ranking a{color:#F5F5F5;text-decoration:none;font-size:.9rem;line-height:1.35;font-weight:600}
+.hs-timeline a:hover,.hs-ranking a:hover{color:#60A5FA}
+.hs-cat{display:block;font-size:.7rem;color:#888;margin-top:2px}
+.hs-ranking{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.hs-ranking li{display:flex;gap:12px;align-items:flex-start}
+.hs-num{font-size:1.6rem;font-weight:800;color:#3B82F6;line-height:1;min-width:24px}
+.hs-more{display:inline-block;margin-top:4px;color:#60A5FA;font-size:.85rem;text-decoration:none}
+.hs-foryou p{color:#bbb;font-size:.85rem;margin:0 0 12px}
+.hs-btn{display:inline-block;padding:8px 16px;border-radius:9999px;background:#3B82F6;color:#fff;text-decoration:none;font-size:.85rem;font-weight:600}
+@media (max-width:980px){.home-with-sidebar{grid-template-columns:1fr}.home-sidebar{position:static}}
+
+/* Feed tipo TikTok */
+body.feed-body{margin:0;background:#000;overflow:hidden}
+.feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.feed-card{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:flex-end;overflow:hidden;color:#fff}
+.feed-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.08);transition:transform 6s ease}
+.feed-card.is-active img{transform:scale(1)}
+.feed-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2) 0%,rgba(0,0,0,.1) 40%,rgba(0,0,0,.9) 100%)}
+.feed-info{position:relative;z-index:1;max-width:680px;width:100%;margin:0 auto;padding:24px 24px 48px;opacity:0;transform:translateY(20px);transition:all .5s}
+.feed-card.is-active .feed-info{opacity:1;transform:none}
+.feed-cat{display:inline-block;background:#3B82F6;padding:4px 10px;border-radius:9999px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.feed-info h2{font:800 clamp(1.5rem,4vw,2.4rem)/1.15 Inter,sans-serif;margin:12px 0}
+.feed-info p{color:#ddd;line-height:1.5;margin:0 0 18px}
+.feed-read{display:inline-block;background:#fff;color:#000;padding:12px 22px;border-radius:9999px;font-weight:700;text-decoration:none}
+.feed-top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:linear-gradient(#000a,transparent)}
+.feed-top a{color:#fff;text-decoration:none;font-weight:700}
+.feed-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:5;color:#fff;opacity:.7;font-size:.8rem;animation:feedBounce 1.6s infinite}
+@keyframes feedBounce{50%{transform:translate(-50%,-6px)}}
+.feed-end{height:100dvh;scroll-snap-align:start;display:grid;place-items:center;color:#888}
+@media (prefers-reduced-motion:reduce){.feed-card img,.feed-info,.feed-hint,.hs-live{transition:none;animation:none}}

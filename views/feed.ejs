@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll - SocialsForce</title>
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" href="/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="/css/home-feed.css">
+</head>
+<body class="feed-body">
+    <div class="feed-top"><a href="/">← SocialsForce</a><a href="/for-you">For You</a></div>
+    <main class="feed" id="feed" aria-label="Story feed"></main>
+    <div class="feed-hint" id="feed-hint">Swipe up ↑</div>
+<script>
+(function () {
+    var feed = document.getElementById("feed"), seen = [], cats = [], loading = false, done = false;
+    try { cats = JSON.parse(localStorage.getItem("sf_cats") || "[]"); } catch (e) {}
+    function esc(s) { return String(s || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function load() {
+        if (loading || done) return; loading = true;
+        fetch("/api/feed?size=4&exclude=" + seen.join(",") + "&cats=" + encodeURIComponent(cats.slice(-30).join(",")), { credentials: "same-origin" })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                var posts = (d && d.posts) || [];
+                if (!posts.length) { done = true; feed.insertAdjacentHTML("beforeend", '<div class="feed-end">You have seen everything. <a href="/">Back home</a></div>'); return; }
+                posts.forEach(function (p) {
+                    seen.push(p.id);
+                    var el = document.createElement("article");
+                    el.className = "feed-card"; el.dataset.cat = p.category || "";
+                    el.innerHTML = (p.image ? '<img src="' + esc(p.image) + '" alt="" loading="lazy">' : "") +
+                        '<div class="feed-info">' + (p.category ? '<span class="feed-cat">' + esc(p.category) + "</span>" : "") +
+                        "<h2>" + esc(p.title) + "</h2><p>" + esc(p.excerpt) + "</p>" +
+                        '<a class="feed-read" href="/article/' + encodeURIComponent(p.slug) + '">Read article</a></div>';
+                    feed.appendChild(el); io.observe(el);
+                });
+            })
+            .catch(function () {})
+            .then(function () { loading = false; });
+    }
+    var timers = new WeakMap();
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            var el = e.target;
+            if (e.isIntersecting && e.intersectionRatio > 0.6) {
+                el.classList.add("is-active");
+                document.getElementById("feed-hint").style.display = "none";
+                // si se queda 3 s, cuenta como interés para elegir los siguientes
+                timers.set(el, setTimeout(function () { if (el.dataset.cat) cats.push(el.dataset.cat); }, 3000));
+                var cards = feed.querySelectorAll(".feed-card");
+                if (cards[cards.length - 2] === el || cards[cards.length - 1] === el) load();
+            } else {
+                el.classList.remove("is-active"); clearTimeout(timers.get(el));
+            }
+        });
+    }, { threshold: [0, 0.6] });
+    load();
+    setTimeout(function () { var f = feed.querySelector(".feed-card"); if (f) f.classList.add("is-active"); }, 400);
+})();
+</script>
+</body>
+</html>

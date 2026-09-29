@@ -76,6 +76,8 @@ app.get("/", async (req, res) => {
     `, [randomCategory], [], "home") : [];
 
     const homeSidebar = await rec.getHomeSidebar();
+    const recentPosts = await safe.q(`SELECT id, title, slug, category, image, published_at FROM posts WHERE published_at <= NOW() ORDER BY published_at DESC LIMIT 8`, [], [], "home");
+    const mostRead = await safe.q(`SELECT id, title, slug, views FROM posts WHERE published_at <= NOW() AND published_at >= NOW() - INTERVAL 30 DAY ORDER BY views DESC LIMIT 5`, [], [], "home");
 
     res.render("home", {
         featuredPost,
@@ -83,7 +85,9 @@ app.get("/", async (req, res) => {
         latestPosts,
         randomCategory,
         randomCategoryPosts,
-        popularTopics: homeSidebar.topics
+        popularTopics: homeSidebar.topics,
+        recentPosts,
+        mostRead
     });
 });
 
@@ -443,6 +447,42 @@ app.get("/api/para-ti", async (req, res) => {
 app.get("/for-you", async (req, res) => {
     const sidebarData = await getSidebarData(db);
     res.render("for-you", { sidebarData, personalizationOn: req.consent.personalization });
+});
+
+// FEED tipo TikTok: selección ponderada (afinidad de categoría + tendencia + novedad) con un poco de azar
+app.get("/feed", (req, res) => res.render("feed"));
+
+app.get("/api/feed", async (req, res) => {
+    const exclude = idList(req.query.exclude, 300);
+    const cats = String(req.query.cats || "").split(",").map(c => c.trim().toLowerCase()).filter(Boolean).slice(-30);
+    const size = safe.clamp(parseInt(req.query.size, 10) || 4, 1, 10);
+    const rows = await safe.q(`
+        SELECT id, title, slug, excerpt, image, category, views, published_at
+        FROM posts
+        WHERE published_at <= NOW() ${exclude.length ? `AND id NOT IN (${exclude.map(() => "?").join(",")})` : ""}
+        ORDER BY published_at DESC LIMIT 150`, exclude, [], "feed");
+    const affinity = {};
+    cats.forEach((c, i) => { affinity[c] = (affinity[c] || 0) + (i + 1) / cats.length; });
+    const maxAff = Math.max(1, ...Object.values(affinity));
+    const maxViews = Math.max(1, ...rows.map(r => r.views || 0));
+    let pool = rows.map(r => {
+        const ageH = (Date.now() - new Date(r.published_at)) / 3600e3;
+        const score = 0.45 * ((affinity[String(r.category || "").toLowerCase()] || 0) / maxAff)
+            + 0.25 * Math.log1p(r.views || 0) / Math.log1p(maxViews)
+            + 0.30 * Math.exp(-ageH / 72)
+            + 0.35 * Math.random();                       // azar
+        return { r, score };
+    }).sort((a, b) => b.score - a.score);
+    // evita dos seguidos de la misma categoría cuando se pueda
+    const out = [];
+    while (out.length < size && pool.length) {
+        const last = out.length ? out[out.length - 1].category : (cats[cats.length - 1] || "");
+        let i = pool.findIndex(p => String(p.r.category || "").toLowerCase() !== String(last).toLowerCase());
+        if (i < 0 || Math.random() < 0.25) i = 0;
+        out.push(pool.splice(i, 1)[0].r);
+    }
+    res.set("Cache-Control", "private, no-store");
+    res.json({ success: true, posts: out });
 });
 
 app.get("/topic/:slug", async (req, res) => {
