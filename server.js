@@ -1245,15 +1245,27 @@ app.post("/createArticle", requireAdmin, async (req, res) => {
         }
 
 
-        let article = await aiResponse.json();
-
-        article = article.output;
-
-        // La IA a veces devuelve el JSON como texto
-        if (typeof article === "string") {
-            try { article = JSON.parse(article.replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch { article = {}; }
+        const rawBody = await aiResponse.text();
+        let payload = {};
+        if (rawBody && rawBody.trim()) {
+            try {
+                payload = JSON.parse(rawBody);
+            } catch {
+                payload = { output: rawBody };
+            }
         }
-        article = article || {};
+
+        let article = payload.output || payload;
+
+        if (typeof article === "string") {
+            const cleaned = article.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+            try {
+                article = JSON.parse(cleaned);
+            } catch {
+                article = {};
+            }
+        }
+        article = article && typeof article === "object" ? article : {};
 
 
         if (
@@ -1313,7 +1325,12 @@ app.post("/createArticle", requireAdmin, async (req, res) => {
             post_id: result.insertId,
             topics: rec.parseTopics(article.topics).length,
             title: article.title,
-            slug: article.slug
+            slug: article.slug,
+            excerpt: article.excerpt,
+            content: article.content,
+            category: article.category,
+            image: article.image,
+            tags
         });
 
 
@@ -1344,7 +1361,15 @@ app.get("/admin/news", requireAdmin, async (req, res) => {
             "&num=10"
         );
 
-        const data = await response.json();
+        const raw = await response.text();
+        let data = {};
+        if (raw && raw.trim()) {
+            try {
+                data = JSON.parse(raw);
+            } catch {
+                data = { raw };
+            }
+        }
 
         if (!response.ok) {
             return res.status(response.status).json(data);

@@ -247,220 +247,83 @@
 
 
 <script>
-generateNewsArticleBtn.addEventListener(
-    "click",
-    async () => {
-
-        if (!selectedNews) {
-
-            newsGenerateStatus.textContent =
-                "Selecciona primero una noticia.";
-
-            return;
-
-        }
-
-        const prompt =
-            newsPrompt.value.trim();
-
-        if (!prompt) {
-
-            newsGenerateStatus.textContent =
-                "Escribe las instrucciones para la IA.";
-
-            return;
-
-        }
-
-        let fprompt =
-            "Instrucciones: " +
-            prompt +
-            "\n\n\n Info: \n\n" +
-            JSON.stringify(
-                selectedNews,
-                null,
-                2
-            );
-
-        generateNewsArticleBtn.disabled =
-            true;
-
-        generateNewsArticleBtn.textContent =
-            "Generando...";
-
-        newsGenerateStatus.textContent =
-            "Generando artículo...";
-
-        try {
-
-            const response =
-                await fetch(
-                    "/createArticle",
-                    {
-
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-
-                            prompt: fprompt
-
-                        })
-
-                    }
-                );
-
-            const data =
-                await response.json();
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.error ||
-                    "Error generando el artículo"
-                );
-
-            }
-
-            console.log(
-                "ARTÍCULO GENERADO:",
-                data
-            );
-
-
-            /* =================================================
-               OBTENER CAMPOS DEL FORMULARIO
-            ================================================= */
-
-            const title =
-                document.getElementById("title");
-
-            const slug =
-                document.getElementById("slug");
-
-            const excerpt =
-                document.getElementById("excerpt");
-
-            const category =
-                document.getElementById("category");
-
-            const image =
-                document.getElementById("image");
-
-            const tags =
-                document.getElementById("tags");
-
-
-            /* =================================================
-               RELLENAR CAMPOS
-            ================================================= */
-
-            if (title) {
-
-                title.value =
-                    data.title || "";
-
-            }
-
-
-            if (slug) {
-
-                slug.value =
-                    data.slug || "";
-
-            }
-
-
-            if (excerpt) {
-
-                excerpt.value =
-                    data.excerpt || "";
-
-            }
-
-
-            if (category) {
-
-                category.value =
-                    data.category || "";
-
-            }
-
-
-            if (image) {
-
-                image.value =
-                    data.image || "";
-
-            }
-
-
-            if (tags) {
-
-                tags.value =
-                    Array.isArray(data.tags)
-                        ? data.tags.join(", ")
-                        : "";
-
-            }
-
-
-            /* =================================================
-               TINYMCE
-            ================================================= */
-
-            if (data.content) {
-
-                const editor =
-                    tinymce.get("content");
-
-                if (editor) {
-
-                    editor.setContent(
-                        data.content
-                    );
-
-                }
-
-            }
-
-
-            /* =================================================
-               ESTADO
-            ================================================= */
-
-            newsGenerateStatus.textContent =
-                "Artículo generado correctamente.";
-
-
-        } catch (error) {
-
-            console.error(
-                "Error generando artículo:",
-                error
-            );
-
-            newsGenerateStatus.textContent =
-                "Error: " +
-                error.message;
-
-
-        } finally {
-
-            generateNewsArticleBtn.disabled =
-                false;
-
-            generateNewsArticleBtn.textContent =
-                "Generar artículo";
-
-        }
-
+(function () {
+    const searchBtn = document.getElementById("searchNewsBtn");
+    const results = document.getElementById("newsResults");
+    const status = document.getElementById("newsStatus");
+    const selectedBox = document.getElementById("selectedNewsContainer");
+    const selectedView = document.getElementById("selectedNews");
+    const promptEl = document.getElementById("newsPrompt");
+    const generateBtn = document.getElementById("generateNewsArticleBtn");
+    const generateStatus = document.getElementById("newsGenerateStatus");
+    let selectedNews = null;
+
+    function pickNews(item) {
+        selectedNews = item;
+        selectedBox.style.display = "block";
+        selectedView.innerHTML = `<strong>${item.title || "Sin título"}</strong><br><small>${item.source?.name || ""}</small><br><a href="${item.link || "#"}" target="_blank">Abrir fuente</a>`;
     }
-);
+
+    searchBtn.addEventListener("click", async () => {
+        searchBtn.disabled = true;
+        status.textContent = "Buscando noticias...";
+        results.innerHTML = "";
+        try {
+            const response = await fetch("/admin/news");
+            const data = await response.json();
+            const items = Array.isArray(data.news_results) ? data.news_results : [];
+            if (!response.ok) throw new Error(data.error || "No se pudieron cargar noticias");
+            if (!items.length) {
+                status.textContent = "No se encontraron noticias.";
+                return;
+            }
+            status.textContent = `Se encontraron ${items.length} noticias.`;
+            results.innerHTML = items.map((item, i) => `<div class="admin-news-item"><button type="button" data-news-index="${i}" class="admin-btn">Seleccionar</button> <strong>${item.title || "Sin título"}</strong></div>`).join("");
+            results.querySelectorAll("[data-news-index]").forEach(btn => {
+                btn.addEventListener("click", () => pickNews(items[Number(btn.getAttribute("data-news-index"))]));
+            });
+        } catch (error) {
+            status.textContent = `Error: ${error.message}`;
+        } finally {
+            searchBtn.disabled = false;
+        }
+    });
+
+    generateBtn.addEventListener("click", async () => {
+        if (!selectedNews) return generateStatus.textContent = "Selecciona primero una noticia.";
+        const extraPrompt = promptEl.value.trim();
+        if (!extraPrompt) return generateStatus.textContent = "Escribe las instrucciones para la IA.";
+        generateBtn.disabled = true;
+        generateBtn.textContent = "Generando...";
+        generateStatus.textContent = "Generando artículo...";
+        try {
+            const prompt = `Instrucciones: ${extraPrompt}\n\nInfo:\n${JSON.stringify(selectedNews, null, 2)}`;
+            const response = await fetch("/createArticle", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.error || "Error generando el artículo");
+            generateStatus.textContent = "Artículo generado correctamente.";
+            if (data.title) document.getElementById("title").value = data.title;
+            if (data.slug) document.getElementById("slug").value = data.slug;
+            if (data.excerpt) document.getElementById("excerpt").value = data.excerpt;
+            if (data.category) document.getElementById("category").value = data.category;
+            if (data.image) document.getElementById("image").value = data.image;
+            if (Array.isArray(data.tags)) document.getElementById("tags").value = data.tags.join(", ");
+            if (data.content) {
+                const editor = tinymce.get("content");
+                if (editor) editor.setContent(data.content);
+            }
+        } catch (error) {
+            generateStatus.textContent = `Error: ${error.message}`;
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = "Generar artículo";
+        }
+    });
+})();
 </script>
 
 
@@ -555,6 +418,9 @@ document.getElementById("aiForm").addEventListener("submit", async e => {
         log("Parsing response...");
 
         const article = await response.json();
+        if (!article.success) {
+            throw new Error(article.error || "No se pudo generar el artículo");
+        }
 
         log("Article generated successfully.");
         log(`Title: ${article.title || "N/A"}`);
@@ -562,12 +428,19 @@ document.getElementById("aiForm").addEventListener("submit", async e => {
         log(`Category: ${article.category || "N/A"}`);
         log(`Content length: ${(article.content || "").length} characters`);
 
-        // Rellenar formulario
         document.getElementById("title").value = article.title || "";
         document.getElementById("slug").value = article.slug || "";
         document.getElementById("excerpt").value = article.excerpt || "";
         document.getElementById("category").value = article.category || "";
-        document.getElementById("content").value = article.content || "";
+        document.getElementById("image").value = article.image || "";
+        document.getElementById("tags").value = Array.isArray(article.tags) ? article.tags.join(", ") : "";
+
+        const editor = tinymce.get("content");
+        if (editor) {
+            editor.setContent(article.content || "");
+        } else {
+            document.getElementById("content").value = article.content || "";
+        }
 
         log("Form updated successfully.");
         log("Done.");
