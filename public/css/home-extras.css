@@ -16,8 +16,7 @@
 .hx-ticker-move a{color:#ddd;text-decoration:none;font-size:.88rem;white-space:nowrap}
 .hx-ticker-move a::before{content:"●";color:#3B82F6;margin-right:10px;font-size:.6rem;vertical-align:middle}
 .hx-ticker-move a:hover{color:#60A5FA}
-.hx-ticker:hover .hx-ticker-move{animation-duration:240s}
-.hx-marquee:hover .hx-marquee-move{animation-duration:280s}
+.hx-ticker:hover .hx-ticker-move,.hx-marquee:hover .hx-marquee-move{animation-play-state:paused}
 @keyframes hxMove{to{transform:translateX(-50%)}}
 
 /* Carrusel automático */
