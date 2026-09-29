@@ -974,10 +974,14 @@ app.post("/createArticle", requireAdmin, async (req, res) => {
         }
 
 
-        const systemPrompt = fs.readFileSync(
+        let systemPrompt = fs.readFileSync(
             path.join(__dirname, "prompts", "article-system.txt"),
             "utf8"
         );
+        // Sustituye [CATEGORIES] por las categorías reales de la BD
+        const catRows = await safe.q(`SELECT DISTINCT category FROM posts WHERE category IS NOT NULL AND category <> '' ORDER BY category`, [], [], "prompt");
+        const categoryList = req.body.categories || catRows.map(r => r.category).join(", ");
+        if (categoryList) systemPrompt = systemPrompt.split("[CATEGORIES]").join(categoryList);
 
 
         const aiResponse = await fetch(
@@ -1039,8 +1043,8 @@ app.post("/createArticle", requireAdmin, async (req, res) => {
 
 
         const tags = Array.isArray(article.tags)
-            ? article.tags
-            : [];
+            ? article.tags.map(t => String(t).trim()).filter(Boolean)
+            : String(article.tags || "").split(",").map(t => t.trim()).filter(Boolean);
 
 
         const [result] = await db.query(`
