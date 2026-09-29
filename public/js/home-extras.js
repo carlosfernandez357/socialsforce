@@ -18,3 +18,12 @@
         }, 400);
     });
 })();
+(function () {
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.querySelectorAll("[data-hx-count]").forEach(function (el) {
+        var end = parseInt(el.getAttribute("data-hx-count"), 10) || 0, t0 = null;
+        if (!end) return;
+        function step(t) { t0 = t0 || t; var k = Math.min(1, (t - t0) / 1200); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); }
+        requestAnimationFrame(step);
+    });
+})();

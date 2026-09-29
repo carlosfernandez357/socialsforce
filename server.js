@@ -92,8 +92,15 @@ app.get("/", async (req, res) => {
         duoPairs,
         spotlight: spotCat ? { name: spotCat, posts: byCat[spotCat].slice(0, 5) } : null,
         popular: pool.slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6),
-        discover: shuffle(pool.filter(p => p.image)).slice(0, 7)
+        discover: shuffle(pool.filter(p => p.image)).slice(0, 7),
+        recentMore: pool.slice(8, 16)
     };
+    const recCat = shuffle(Object.keys(byCat).filter(c => !duoCats.includes(c) && c !== spotCat && byCat[c].length >= 2))[0]
+        || shuffle(Object.keys(byCat))[0];
+    homeExtras.recommended = recCat ? { name: recCat, posts: byCat[recCat].slice(0, 3) } : null;
+    homeExtras.catStats = await safe.q(`SELECT category AS name, COUNT(*) AS total FROM posts WHERE published_at <= NOW() AND category IS NOT NULL AND category <> '' GROUP BY category ORDER BY total DESC LIMIT 8`, [], [], "home");
+    const totalsRow = (await safe.q(`SELECT COUNT(*) AS posts, COUNT(DISTINCT category) AS cats FROM posts WHERE published_at <= NOW()`, [], [], "home"))[0] || {};
+    homeExtras.totals = { posts: Number(totalsRow.posts || 0), cats: Number(totalsRow.cats || 0) };
     const recentPosts = await safe.q(`SELECT id, title, slug, category, image, published_at FROM posts WHERE published_at <= NOW() ORDER BY published_at DESC LIMIT 8`, [], [], "home");
     const mostRead = await safe.q(`SELECT id, title, slug, views FROM posts WHERE published_at <= NOW() AND published_at >= NOW() - INTERVAL 30 DAY ORDER BY views DESC LIMIT 5`, [], [], "home");
 

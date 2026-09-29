@@ -17,6 +17,26 @@ const ago = d => { const m = Math.max(1, Math.round((Date.now() - new Date(d)) /
     </div>
     <% } %>
 
+<% } %>
+
+<% if (x && part === 'intro') { %>
+<aside class="hx-intro" aria-label="About SocialsForce">
+    <div class="hx-intro-glow"></div>
+    <span class="hx-intro-kicker">Welcome to</span>
+    <h2 class="hx-intro-title hx-grad">SocialsForce</h2>
+    <p>Tech, AI, gaming and the stories shaping the internet — explained clearly, updated every day.</p>
+    <div class="hx-stats">
+        <div><strong data-hx-count="<%= x.totals.posts %>"><%= x.totals.posts %></strong><small>articles</small></div>
+        <div><strong data-hx-count="<%= x.totals.cats %>"><%= x.totals.cats %></strong><small>categories</small></div>
+    </div>
+    <div class="hx-intro-links">
+        <a href="/for-you" class="hs-btn">For You</a>
+        <a href="/feed" class="hx-ghost">Scroll mode ▶</a>
+    </div>
+</aside>
+<% } %>
+
+<% if (x && part === 'carousel') { %>
     <% if (x.carousel.length >= 4) { %>
     <section class="hx-section hx-reveal" aria-labelledby="hx-carousel-title">
         <div class="content-container">
@@ -41,6 +61,41 @@ const ago = d => { const m = Math.max(1, Math.round((Date.now() - new Date(d)) /
     </section>
     <% } %>
 
+<% } %>
+
+<% if (x && part === 'latest') { %>
+    <% if (x.recommended && x.recommended.posts.length) { %>
+    <div class="hx-rec hx-reveal">
+        <div class="section-header">
+            <h3 class="section-title"><span class="hx-star">★</span> Recommended: <%= x.recommended.name %></h3>
+            <a href="<%= catUrl(x.recommended.name) %>" class="section-link">More</a>
+        </div>
+        <div class="hx-rec-grid">
+            <% x.recommended.posts.forEach(p => { %>
+            <a class="hx-rec-card" href="/article/<%= p.slug %>">
+                <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.title %>" loading="lazy"><% } %>
+                <strong><%= p.title %></strong>
+                <small><%= ago(p.published_at) %> ago</small>
+            </a>
+            <% }) %>
+        </div>
+    </div>
+    <% } %>
+
+    <% if (x.catStats.length) { const maxC = Math.max(...x.catStats.map(c => Number(c.total))); %>
+    <div class="hx-cats hx-reveal">
+        <h3 class="hs-title">Explore other categories</h3>
+        <div class="hx-cats-grid">
+            <% x.catStats.forEach((c, i) => { %>
+            <a class="hx-cat" href="<%= catUrl(c.name) %>" style="--h:<%= (i * 47) % 360 %>;--w:<%= Math.round(Number(c.total) / maxC * 100) %>%">
+                <span class="hx-cat-name"><%= c.name %></span>
+                <span class="hx-cat-num"><%= c.total %></span>
+                <span class="hx-cat-bar"></span>
+            </a>
+            <% }) %>
+        </div>
+    </div>
+    <% } %>
 <% } %>
 
 <% if (x && part === 'bottom') { %>
@@ -101,7 +156,19 @@ const ago = d => { const m = Math.max(1, Math.round((Date.now() - new Date(d)) /
 
     <% if (x.discover.length >= 5) { %>
     <section class="hx-section hx-reveal" aria-labelledby="hx-discover-title">
-        <div class="content-container">
+        <div class="content-container <%= x.recentMore.length ? 'hx-left-split' : '' %>">
+            <% if (x.recentMore.length) { %>
+            <aside class="hx-side hx-recent">
+                <h3 class="hs-title">Recent</h3>
+                <ul>
+                    <% x.recentMore.forEach(p => { %>
+                    <li><small><%= ago(p.published_at) %></small><a href="/article/<%= p.slug %>"><%= p.title %></a></li>
+                    <% }) %>
+                </ul>
+                <a href="/recent" class="hs-more">All recent →</a>
+            </aside>
+            <% } %>
+            <div>
             <div class="section-header">
                 <h2 class="section-title hx-grad" id="hx-discover-title">Discover</h2>
                 <button type="button" class="section-link hx-shuffle" data-hx-shuffle>Shuffle ⟳</button>
@@ -113,6 +180,7 @@ const ago = d => { const m = Math.max(1, Math.round((Date.now() - new Date(d)) /
                     <span><% if (p.category) { %><span class="hx-chip"><%= p.category %></span><% } %><strong><%= p.title %></strong></span>
                 </a>
                 <% }) %>
+            </div>
             </div>
         </div>
     </section>
