@@ -113,7 +113,8 @@
 
     <section id="trending-posts-section">
 
-        <div class="content-container">
+        <div class="content-container hx-trend-split">
+            <div class="hx-trend-main">
 
             <div class="section-header">
 
@@ -179,10 +180,14 @@
             </div>
 
         </div>
+            <%- include('partials/home-extras', { part: 'intro', x: typeof homeExtras !== 'undefined' ? homeExtras : null }) %>
+        </div>
 
     </section>
 
     <% } %>
+
+    <%- include('partials/home-extras', { part: 'carousel', x: typeof homeExtras !== 'undefined' ? homeExtras : null }) %>
 
 
     <!-- LATEST NEWS -->
@@ -265,6 +270,7 @@
 
             </div>
 
+            <%- include('partials/home-extras', { part: 'latest', x: typeof homeExtras !== 'undefined' ? homeExtras : null }) %>
         </div>
             <%- include('partials/home-sidebar') %>
         </div>
