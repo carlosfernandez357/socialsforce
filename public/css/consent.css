@@ -1,0 +1,19 @@
+.sf-consent{position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;justify-content:center;padding:16px;pointer-events:none}
+.sf-consent[hidden]{display:none}
+.sf-consent-box{pointer-events:auto;max-width:760px;width:100%;background:#fff;color:#111;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.18);padding:20px 22px;font-family:Inter,system-ui,sans-serif}
+.sf-consent-title{font-size:1.05rem;font-weight:700;margin:0 0 8px}
+.sf-consent-text{font-size:.88rem;line-height:1.5;color:#374151;margin:0 0 14px}
+.sf-consent-text a{color:inherit;text-decoration:underline}
+.sf-consent-prefs{display:grid;gap:10px;margin:0 0 14px}
+.sf-consent-prefs[hidden]{display:none}
+.sf-consent-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer}
+.sf-consent-row small{display:block;color:#6b7280;font-size:.8rem;margin-top:2px}
+.sf-consent-row input{width:20px;height:20px;flex-shrink:0;accent-color:#111}
+.sf-consent-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.sf-btn{font:inherit;font-size:.88rem;font-weight:600;padding:10px 16px;border-radius:999px;border:1px solid #111;cursor:pointer;background:#fff;color:#111}
+.sf-btn[hidden]{display:none}
+.sf-btn-primary{background:#111;color:#fff}
+.sf-btn-secondary{background:#fff;color:#111}
+.sf-btn-ghost{border-color:transparent;text-decoration:underline}
+.footer-link-button{background:none;border:0;padding:0;font:inherit;cursor:pointer;text-align:left}
+@media (max-width:560px){.sf-consent{padding:0}.sf-consent-box{border-radius:14px 14px 0 0}.sf-consent-actions .sf-btn{flex:1 1 45%}}

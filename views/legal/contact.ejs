@@ -1,0 +1,14 @@
+<%- include('../partials/legal-start', { pageDescription: 'Contact the SocialsForce team.' }) %>
+<p>We are happy to hear from you: news tips, corrections, partnerships or questions about your data.</p>
+<div class="legal-box">
+    <p><strong>Email:</strong> <%= legal.email %><br>
+    <strong>Postal address:</strong> <%= legal.address %></p>
+</div>
+<h2>Useful links</h2>
+<ul>
+    <li>Advertising and partnerships: <a href="/advertising">Advertising</a></li>
+    <li>Privacy requests (access, erasure, etc.): see the <a href="/privacy">Privacy Policy</a></li>
+    <li>Cookie preferences: <button type="button" class="inline-link-button" data-open-consent>Cookie settings</button></li>
+</ul>
+<p>When you email us, we use your data only to answer your message, as described in our <a href="/privacy">Privacy Policy</a>.</p>
+<%- include('../partials/legal-end') %>

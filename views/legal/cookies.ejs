@@ -1,0 +1,27 @@
+<%- include('../partials/legal-start') %>
+<p>This policy explains what cookies and similar technologies (such as local storage) SocialsForce uses, in accordance with Article 22.2 of Spanish Law 34/2002 (LSSI-CE) and the guidance of the Spanish Data Protection Agency.</p>
+
+<h2>1. What are cookies?</h2>
+<p>Cookies are small files that a website stores in your browser. Local storage works in a similar way. Some are necessary for the site to work; others are only used if you give your consent.</p>
+
+<h2>2. Cookies we use</h2>
+<table>
+    <thead><tr><th>Name</th><th>Provider</th><th>Purpose</th><th>Type</th><th>Duration</th></tr></thead>
+    <tbody>
+        <tr><td>sf_consent</td><td>SocialsForce</td><td>Remembers your cookie choices</td><td>Necessary</td><td>6 months</td></tr>
+        <tr><td>admin_token</td><td>SocialsForce</td><td>Session of the site administrators only</td><td>Necessary</td><td>Session / up to 7 days</td></tr>
+        <tr><td>sf_vid</td><td>SocialsForce</td><td>Random pseudonymous identifier used to personalize recommendations</td><td>Personalization</td><td>12 months</td></tr>
+        <tr><td>sf_cats, sf_seen (local storage)</td><td>SocialsForce</td><td>Categories and articles you read, used for “For You”</td><td>Personalization</td><td>Until deleted</td></tr>
+        <tr><td>_ga, _ga_*</td><td>Google Analytics</td><td>Distinguish users and sessions for audience statistics</td><td>Analytics</td><td>Up to 2 years</td></tr>
+        <tr><td>Advertising cookies</td><td>Ad partners (not active yet)</td><td>Show and measure ads</td><td>Advertising</td><td>Will be listed when activated</td></tr>
+    </tbody>
+</table>
+<p>Without consent we do not set analytics, personalization or advertising cookies. Google Analytics is loaded only after you accept analytics cookies (Google Consent Mode v2 is configured as “denied” by default).</p>
+
+<h2>3. How to accept, reject or withdraw consent</h2>
+<p>When you first visit the site you can accept all cookies, reject them or configure them by category. You can change your choice at any time here: <button type="button" class="inline-link-button" data-open-consent>Cookie settings</button>. When you withdraw personalization consent we delete your identifier, your local reading history and your interest profile on our servers.</p>
+<p>You can also block or delete cookies from your browser settings: <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a>, <a href="https://support.mozilla.org/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener">Firefox</a>, <a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac" target="_blank" rel="noopener">Safari</a>, <a href="https://support.microsoft.com/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">Edge</a>.</p>
+
+<h2>4. More information</h2>
+<p>See our <a href="/privacy">Privacy Policy</a> or contact <%= legal.email %>.</p>
+<%- include('../partials/legal-end') %>

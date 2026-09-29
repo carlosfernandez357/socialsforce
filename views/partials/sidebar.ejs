@@ -35,8 +35,8 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "sho
         </div>
 
         <ul class="sidebar-post-list">
-            <% sbCategory.posts.forEach(function (p) { %>
-            <li class="sidebar-post">
+            <% sbCategory.posts.forEach(function (p, i) { %>
+            <li class="sidebar-post" data-rec-pl="sidebar" data-rec-pos="<%= i %>" data-pid="<%= p.id %>">
                 <a href="/article/<%= p.slug %>" class="sidebar-post-link">
                     <img
                         src="<%= p.image || '/images/noimage.jpg' %>"
@@ -72,7 +72,7 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "sho
 
         <ol class="sidebar-trending-list">
             <% sbTrending.forEach(function (p, i) { %>
-            <li class="sidebar-trending-item">
+            <li class="sidebar-trending-item" data-rec-pl="sidebar" data-rec-pos="<%= 10 + i %>" data-pid="<%= p.id %>">
                 <a href="/article/<%= p.slug %>" class="sidebar-trending-link">
                     <span class="sidebar-rank">#<%= i + 1 %></span>
                     <img

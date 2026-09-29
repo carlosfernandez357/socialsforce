@@ -9,8 +9,17 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const { getSidebarData } = require("./utils/sidebarData");
+const safe = require("./utils/safe");
+const tracking = require("./utils/tracking");
+const rec = require("./utils/recommend");
+const jobs = require("./utils/jobs");
+const adminStats = require("./utils/adminStats");
 
+app.set("trust proxy", true);
 app.use(cookieParser());
+app.use(tracking.consentMiddleware);
+tracking.register(app);
+safe.refreshSchema().then(() => jobs.start());
 app.use(express.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
@@ -33,93 +42,50 @@ const GA_PROPERTY_ID = "554926387";
 
 
 app.get("/", async (req, res) => {
-    try {
+    // Cada bloque es independiente: si uno falla, el resto de la home se muestra igual
+    const featuredPost = (await safe.q(`
+        SELECT posts.*
+        FROM posts
+        INNER JOIN home_featured ON posts.id = home_featured.post_id
+        WHERE home_featured.id = 1 AND posts.published_at <= NOW()
+        LIMIT 1
+    `, [], [], "home"))[0] || null;
 
+    const exclude = featuredPost ? [featuredPost.id] : [];
+    const trendingPosts = await rec.getTrending(6, { exclude });
 
-        const [featuredRows] = await db.query(`
-            SELECT posts.*
-            FROM posts
-            INNER JOIN home_featured
-                ON posts.id = home_featured.post_id
-            WHERE home_featured.id = 1
-            AND posts.published_at <= NOW()
-            LIMIT 1
-        `);
+    const latestPosts = await safe.q(`
+        SELECT * FROM posts
+        WHERE published_at <= NOW() AND id != ?
+        ORDER BY published_at DESC
+        LIMIT 3
+    `, [featuredPost?.id || 0], [], "home");
 
-        const featuredPost = featuredRows[0] || null;
+    const categoryRows = await safe.q(`
+        SELECT category FROM posts
+        WHERE category IS NOT NULL AND category != '' AND published_at <= NOW()
+        GROUP BY category ORDER BY RAND() LIMIT 1
+    `, [], [], "home");
 
+    const randomCategory = categoryRows[0]?.category || null;
+    const randomCategoryPosts = randomCategory ? await safe.q(`
+        SELECT * FROM posts
+        WHERE category = ? AND published_at <= NOW()
+        ORDER BY published_at DESC
+        LIMIT 3
+    `, [randomCategory], [], "home") : [];
 
-        const [trendingPosts] = await db.query(`
-            SELECT *,
-                views / POW(
-                    TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2,
-                    1.5
-                ) AS trend_score
-            FROM posts
-            WHERE published_at <= NOW()
-            ORDER BY trend_score DESC
-            LIMIT 6
-        `);
+    const homeSidebar = await rec.getHomeSidebar();
 
-        const [latestPosts] = await db.query(`
-            SELECT *
-            FROM posts
-            WHERE published_at <= NOW()
-            AND id != ?
-            ORDER BY published_at DESC
-            LIMIT 3
-        `, [featuredPost?.id || 0]);
-
-
-
-        const [randomCategoryRows] = await db.query(`
-            SELECT category
-            FROM posts
-            WHERE category IS NOT NULL
-            AND category != ''
-            AND published_at <= NOW()
-            GROUP BY category
-            ORDER BY RAND()
-            LIMIT 1
-        `);
-
-        let randomCategory = null;
-        let randomCategoryPosts = [];
-
-        if (randomCategoryRows.length > 0) {
-
-            randomCategory = randomCategoryRows[0].category;
-
-            const [categoryPosts] = await db.query(`
-                SELECT *
-                FROM posts
-                WHERE category = ?
-                AND published_at <= NOW()
-                ORDER BY published_at DESC
-                LIMIT 3
-            `, [randomCategory]);
-
-            randomCategoryPosts = categoryPosts;
-        }
-
-        res.render("home", {
-            featuredPost,
-            trendingPosts,
-            latestPosts,
-            randomCategory,
-            randomCategoryPosts
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Error al cargar los posts");
-    }
+    res.render("home", {
+        featuredPost,
+        trendingPosts,
+        latestPosts,
+        randomCategory,
+        randomCategoryPosts,
+        popularTopics: homeSidebar.topics
+    });
 });
-
-
-
-
-
 
 app.get("/article/:slug", async (req, res) => {
     try {
@@ -141,40 +107,9 @@ app.get("/article/:slug", async (req, res) => {
 
         const post = rows[0];
 
-        // Identificador de la cookie para este artículo
-        const viewCookie = `cfrxrl_${post.id}`;
-
-        // Incrementar visitas solamente si no se ha visto
-        // este artículo durante las últimas 24 horas
-        if (!req.cookies[viewCookie]) {
-
-            await db.query(`
-                UPDATE posts
-                SET views = views + 1
-                WHERE id = ?
-            `, [post.id]);
-
-            post.views += 1;
-
-            res.cookie(viewCookie, "1", {
-                maxAge: 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                sameSite: "lax"
-            });
-        }
-
-
-        // Contenido relacionado
-        const [relatedPosts] = await db.query(`
-            SELECT *
-            FROM posts
-            WHERE category = ?
-              AND id != ?
-              AND published_at <= NOW()
-            ORDER BY RAND()
-            LIMIT 3
-        `, [post.category, post.id]);
-
+        // Las visitas ahora se cuentan en /api/track (tiempo activo, anti-bots y deduplicación)
+        const relatedPosts = await rec.getRelated(post, 3);
+        const postTopics = await rec.getPostTopics(post.id);
 
         // Destinos posibles para el botón inferior
         const backOptions = [
@@ -209,12 +144,7 @@ app.get("/article/:slug", async (req, res) => {
             backOptions[Math.floor(Math.random() * backOptions.length)];
 
 
-        // Tiempo de lectura (~200 palabras/minuto)
-        const plainText = String(post.content || "")
-            .replace(/<[^>]*>/g, " ")
-            .trim();
-        const wordCount = plainText ? plainText.split(/\s+/).length : 0;
-        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+        const readingTime = safe.readingMinutes(post);
 
         const sidebarData = await getSidebarData(db, post.id);
 
@@ -223,13 +153,14 @@ app.get("/article/:slug", async (req, res) => {
             relatedPosts,
             backDestination,
             readingTime,
-            sidebarData
+            sidebarData,
+            postTopics
         });
 
 
     } catch (error) {
 
-        console.error(error);
+        safe.logError("article", error);
 
         res.status(500).send("Error al cargar el artículo");
     }
@@ -286,17 +217,7 @@ app.get("/trending", async (req, res) => {
 
     try {
 
-        const [posts] = await db.query(`
-            SELECT *,
-                   views / POW(
-                       TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2,
-                       1.5
-                   ) AS trend_score
-            FROM posts
-            WHERE published_at <= NOW()
-            ORDER BY trend_score DESC
-            LIMIT 30
-        `);
+        const posts = await rec.getTrending(30, { perCat: 4 });
 
         const sidebarData = await getSidebarData(db);
 
@@ -462,19 +383,28 @@ app.get("/search", async (req, res) => {
         .map(word => `+${word}*`)
         .join(" ");
 
-    const [results] = await db.query(`
+    let results = await safe.q(`
         SELECT *,
             MATCH(title, excerpt, content)
             AGAINST(? IN BOOLEAN MODE) AS score
         FROM posts
         WHERE MATCH(title, excerpt, content)
             AGAINST(? IN BOOLEAN MODE)
-        ORDER BY score DESC, created_at DESC
+          AND published_at <= NOW()
+        ORDER BY score DESC, published_at DESC
         LIMIT 50
-    `, [
-        booleanQuery,
-        booleanQuery
-    ]);
+    `, [booleanQuery, booleanQuery], null, "search");
+
+    // Fallback si no hay índice FULLTEXT o la consulta falla
+    if (!results) {
+        const like = `%${query.replace(/[%_]/g, "")}%`;
+        results = await safe.q(`
+            SELECT * FROM posts
+            WHERE (title LIKE ? OR excerpt LIKE ?) AND published_at <= NOW()
+            ORDER BY published_at DESC
+            LIMIT 50
+        `, [like, like], [], "search");
+    }
 
     const sidebarData = await getSidebarData(db);
 
@@ -490,98 +420,84 @@ app.get("/search", async (req, res) => {
 
 
 
-// FOR YOU — recomendaciones (con o sin historial del usuario)
+// FOR YOU — recomendaciones (perfil del visitante, historial local, contexto o en frío)
 
-const FORYOU_FIELDS = "id, title, slug, excerpt, image, category, views, published_at";
+const idList = (v, max) => String(v || "").split(",").map(Number).filter(n => Number.isInteger(n) && n > 0).slice(0, max);
 
 app.get("/api/para-ti", async (req, res) => {
-
-    try {
-
-        const cats = String(req.query.cats || "")
-            .split(",")
-            .map(c => c.trim())
-            .filter(Boolean)
-            .slice(0, 5);
-
-        const excludeIds = String(req.query.exclude || "")
-            .split(",")
-            .map(Number)
-            .filter(n => Number.isInteger(n) && n > 0)
-            .slice(0, 50);
-
-        const excludeSql = excludeIds.length
-            ? `AND id NOT IN (${excludeIds.map(() => "?").join(",")})`
-            : "";
-
-        let posts = [];
-
-        if (cats.length > 0) {
-
-            // Con historial: bonus por categorías vistas + trend score
-            const placeholders = cats.map(() => "?").join(",");
-
-            const [personal] = await db.query(`
-                SELECT ${FORYOU_FIELDS},
-                    (CASE WHEN category IN (${placeholders}) THEN 3 ELSE 0 END) +
-                    views / POW(TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2, 1.5) AS score
-                FROM posts
-                WHERE published_at <= NOW()
-                ${excludeSql}
-                ORDER BY score DESC
-                LIMIT 6
-            `, [...cats, ...excludeIds]);
-
-            posts = personal;
-
-        } else {
-
-            // Sin historial: trending reciente + variedad de categorías
-            const [trending] = await db.query(`
-                SELECT ${FORYOU_FIELDS}
-                FROM posts
-                WHERE published_at <= NOW()
-                ${excludeSql}
-                ORDER BY views / POW(TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2, 1.5) DESC
-                LIMIT 3
-            `, excludeIds);
-
-            const [diverse] = await db.query(`
-                SELECT p.id, p.title, p.slug, p.excerpt, p.image, p.category, p.views, p.published_at
-                FROM posts p
-                INNER JOIN (
-                    SELECT category, MAX(id) AS max_id
-                    FROM posts
-                    WHERE published_at <= NOW()
-                      AND category IS NOT NULL
-                      AND category != ''
-                    GROUP BY category
-                    ORDER BY RAND()
-                    LIMIT 6
-                ) t ON p.id = t.max_id
-            `);
-
-            const trendingIds = new Set(trending.map(t => t.id));
-
-            posts = [
-                ...trending,
-                ...diverse.filter(d => !trendingIds.has(d.id) && !excludeIds.includes(d.id))
-            ].slice(0, 6);
-        }
-
-        res.json({ success: true, posts });
-
-    } catch (error) {
-
-        console.error("PARA TI ERROR:", error);
-
-        res.status(500).json({ success: false });
-    }
+    const cats = String(req.query.cats || "").split(",").map(c => c.trim()).filter(Boolean).slice(0, 5);
+    const size = safe.clamp(parseInt(req.query.size, 10) || 6, 1, 24);
+    const page = safe.clamp(parseInt(req.query.page, 10) || 0, 0, 50);
+    const result = await rec.getForYou({
+        visitorId: req.visitorId || null,
+        legacyCats: req.consent.personalization ? cats : [],
+        exclude: idList(req.query.exclude, 100),
+        contextId: parseInt(req.query.ctx, 10) || null,
+        page,
+        size
+    });
+    res.set("Cache-Control", "private, no-store");
+    res.json({ success: true, ...result });
 });
 
+app.get("/for-you", async (req, res) => {
+    const sidebarData = await getSidebarData(db);
+    res.render("for-you", { sidebarData, personalizationOn: req.consent.personalization });
+});
 
+app.get("/topic/:slug", async (req, res) => {
+    const slug = safe.slugify(req.params.slug);
+    if (!safe.features().topics) return res.redirect(302, "/categories");
+    const topic = (await safe.q(`SELECT id, slug, name FROM topics WHERE slug = ? LIMIT 1`, [slug], [], "topic"))[0];
+    if (!topic) return res.redirect(302, "/categories");
+    const posts = await safe.q(`
+        SELECT p.id, p.title, p.slug, p.excerpt, p.image, p.category, p.views, p.published_at
+        FROM post_topics pt
+        JOIN posts p ON p.id = pt.post_id
+        WHERE pt.topic_id = ? AND p.published_at <= NOW()
+        ORDER BY p.published_at DESC
+        LIMIT 60
+    `, [topic.id], [], "topic");
+    const related = await safe.q(`
+        SELECT t.slug, t.name, COUNT(*) AS n
+        FROM post_topics a
+        JOIN post_topics b ON b.post_id = a.post_id AND b.topic_id != a.topic_id
+        JOIN topics t ON t.id = b.topic_id
+        WHERE a.topic_id = ?
+        GROUP BY t.id, t.slug, t.name
+        ORDER BY n DESC
+        LIMIT 12
+    `, [topic.id], [], "topic");
+    const sidebarData = await getSidebarData(db);
+    res.render("topic", { topic, posts, relatedTopics: related, sidebarData });
+});
 
-
+// Páginas corporativas y legales
+const LEGAL_PAGES = {
+    about: "About us",
+    contact: "Contact",
+    advertising: "Advertising",
+    privacy: "Privacy Policy",
+    cookies: "Cookie Policy",
+    terms: "Terms of Use",
+    legal: "Legal Notice"
+};
+const LEGAL_INFO = {
+    owner: process.env.LEGAL_OWNER || "[OWNER NAME OR COMPANY]",
+    taxId: process.env.LEGAL_TAX_ID || "[NIF/CIF]",
+    address: process.env.LEGAL_ADDRESS || "[POSTAL ADDRESS, SPAIN]",
+    email: process.env.LEGAL_EMAIL || "[CONTACT EMAIL]",
+    registry: process.env.LEGAL_REGISTRY || "",
+    updated: process.env.LEGAL_UPDATED || "September 29, 2026"
+};
+Object.keys(LEGAL_PAGES).forEach(page => {
+    app.get(`/${page}`, (req, res) => {
+        res.render(`legal/${page}`, { pageTitle: LEGAL_PAGES[page], page, legal: LEGAL_INFO }, (err, html) => {
+            if (err) { safe.logError("legal", err); return res.status(500).send("Page unavailable"); }
+            res.send(html);
+        });
+    });
+});
 
 async function generateSitemap(db) {
 
@@ -590,6 +506,7 @@ async function generateSitemap(db) {
     const [posts] = await db.query(`
         SELECT slug, updated_at
         FROM posts
+        WHERE published_at <= NOW()
         ORDER BY updated_at DESC
     `);
 
@@ -628,6 +545,34 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         <priority>0.8</priority>
     </url>
 `;
+
+    ["about", "contact", "advertising", "privacy", "cookies", "terms", "legal"].forEach(page => {
+        xml += `
+    <url>
+        <loc>${baseUrl}/${page}</loc>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+`;
+    });
+
+    if (safe.features().topics) {
+        const topics = await safe.q(`
+            SELECT t.slug FROM topics t
+            JOIN post_topics pt ON pt.topic_id = t.id
+            GROUP BY t.id, t.slug
+            HAVING COUNT(*) >= 2
+        `, [], [], "sitemap");
+        topics.forEach(t => {
+            xml += `
+    <url>
+        <loc>${baseUrl}/topic/${encodeURIComponent(t.slug)}</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.6</priority>
+    </url>
+`;
+        });
+    }
 
     categories.forEach(category => {
 
@@ -746,11 +691,11 @@ function requireAdmin(req, res, next) {
 
 
 
-const ADMIN_USERNAME = "kenzo";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "kenzo";
 
-const ADMIN_PASSWORD = "juegoscuenta";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "juegoscuenta";
 
-const JWT_SECRET = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
+const JWT_SECRET = process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
 
 app.get("/admin", requireAdmin, async (req, res) => {
     const token = req.cookies.admin_token;
@@ -766,68 +711,53 @@ app.get("/admin", requireAdmin, async (req, res) => {
         return res.render("admin/login", {error: "La sesión ha expirado"});
     }
 
-    try {
-        const [[posts]] = await db.query(`
-            SELECT COUNT(*) AS totalPosts
-            FROM posts
-        `);
+    // Cada consulta tiene fallback: el dashboard carga aunque falle alguna
+    const one = async (sql, fallback) => (await safe.q(sql, [], [fallback], "admin"))[0] || fallback;
+    const posts = await one(`SELECT COUNT(*) AS totalPosts FROM posts`, { totalPosts: 0 });
+    const views = await one(`SELECT COALESCE(SUM(views), 0) AS totalViews FROM posts`, { totalViews: 0 });
+    const categories = await one(`SELECT COUNT(DISTINCT category) AS totalCategories FROM posts WHERE category IS NOT NULL`, { totalCategories: 0 });
+    const today = await one(`SELECT COUNT(*) AS todayPosts FROM posts WHERE published_at IS NOT NULL AND DATE(published_at) = CURDATE()`, { todayPosts: 0 });
 
-        const [[views]] = await db.query(`
-            SELECT COALESCE(SUM(views), 0) AS totalViews
-            FROM posts
-        `);
+    const latestPosts = await safe.q(`
+        SELECT id, title, slug, category, image, views, published_at
+        FROM posts ORDER BY published_at DESC LIMIT 10
+    `, [], [], "admin");
+    const topPosts = await safe.q(`
+        SELECT id, title, slug, category, views
+        FROM posts ORDER BY views DESC LIMIT 10
+    `, [], [], "admin");
+    const categoryStats = await safe.q(`
+        SELECT category, COUNT(*) AS total, COALESCE(SUM(views), 0) AS views
+        FROM posts WHERE category IS NOT NULL
+        GROUP BY category ORDER BY total DESC
+    `, [], [], "admin");
 
-        const [[categories]] = await db.query(`
-            SELECT COUNT(DISTINCT category) AS totalCategories
-            FROM posts
-            WHERE category IS NOT NULL
-        `);
+    let insights = null;
+    try { insights = await adminStats.collect(); } catch (error) { safe.logError("admin-insights", error); }
 
-        const [[today]] = await db.query(`
-            SELECT COUNT(*) AS todayPosts
-            FROM posts
-            WHERE published_at IS NOT NULL
-              AND DATE(published_at) = CURDATE()
-        `);
+    res.render("admin/dashboard", {
+        stats: {
+            totalPosts: posts.totalPosts,
+            totalViews: views.totalViews,
+            totalCategories: categories.totalCategories,
+            todayPosts: today.todayPosts
+        },
+        latestPosts,
+        topPosts,
+        categoryStats,
+        insights,
+        jobsDone: req.query.jobs || null
+    });
+});
 
-        const [latestPosts] = await db.query(`
-            SELECT id, title, slug, category, image, views, published_at
-            FROM posts
-            ORDER BY published_at DESC
-            LIMIT 10
-        `);
-
-        const [topPosts] = await db.query(`
-            SELECT id, title, slug, category, views
-            FROM posts
-            ORDER BY views DESC
-            LIMIT 10
-        `);
-
-        const [categoryStats] = await db.query(`
-            SELECT category, COUNT(*) AS total, COALESCE(SUM(views), 0) AS views
-            FROM posts
-            WHERE category IS NOT NULL
-            GROUP BY category
-            ORDER BY total DESC
-        `);
-
-        res.render("admin/dashboard", {
-            stats: {
-                totalPosts: posts.totalPosts,
-                totalViews: views.totalViews,
-                totalCategories: categories.totalCategories,
-                todayPosts: today.todayPosts
-            },
-            latestPosts,
-            topPosts,
-            categoryStats
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Error al cargar el dashboard");
-    }
+// Recalcular estadísticas / similitudes manualmente
+app.post("/admin/jobs/run", requireAdmin, async (req, res) => {
+    await safe.refreshSchema();
+    await jobs.runJob("stats", jobs.computeStats);
+    await jobs.runJob("topics", jobs.computeTopicSimilarity);
+    await jobs.runJob("covisit", jobs.computeCovisit);
+    rec.invalidate();
+    res.redirect("/admin?jobs=1");
 });
 
 
@@ -947,6 +877,32 @@ app.post("/admin/articles/:id/delete", requireAdmin, async (req, res) => {
 });
 
 
+// Guarda evergreen/depth/reading_time y temas si existen las columnas/tablas (nunca rompe la creación)
+async function savePostExtras(postId, data) {
+    if (!postId) return;
+    try {
+        const f = safe.features();
+        const sets = [], params = [];
+        if (safe.hasCol("posts", "evergreen") && data.evergreen !== undefined && data.evergreen !== "") {
+            sets.push("evergreen = ?"); params.push(safe.clamp(Math.round(Number(data.evergreen)) || 0, 0, 10));
+        }
+        if (safe.hasCol("posts", "depth") && data.depth !== undefined && data.depth !== "") {
+            sets.push("depth = ?"); params.push(safe.clamp(Math.round(Number(data.depth)) || 5, 1, 10));
+        }
+        if (f.readingTimeCol) {
+            sets.push("reading_time = ?"); params.push(safe.readingMinutes({ content: data.content }));
+        }
+        if (sets.length) await safe.q(`UPDATE posts SET ${sets.join(", ")} WHERE id = ?`, [...params, postId], null, "post-extras");
+
+        let topics = rec.parseTopics(data.topics);
+        if (!topics.length && data.tags) topics = rec.parseTopics(Array.isArray(data.tags) ? data.tags : String(data.tags).split(","));
+        if (topics.length) await rec.saveTopics(postId, topics);
+        rec.invalidate();
+    } catch (error) {
+        safe.logError("post-extras", error);
+    }
+}
+
 app.get("/admin/create-article", requireAdmin, (req, res) => {
     res.render("admin/create-article");
 });
@@ -963,38 +919,46 @@ app.post("/admin/articles/create", requireAdmin, async (req, res) => {
         tags
     } = req.body;
 
-    await db.query(`
-        INSERT INTO posts (
+    try {
+        const tagList = Array.isArray(tags) ? tags : String(tags || "").split(",").map(t => t.trim()).filter(Boolean);
+        const [result] = await db.query(`
+            INSERT INTO posts (
+                title,
+                slug,
+                excerpt,
+                content,
+                category,
+                image,
+                tags,
+                views,
+                published_at,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
+        `, [
             title,
             slug,
             excerpt,
             content,
             category,
             image,
-            tags,
-            views,
-            published_at,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())
-    `, [
-        title,
-        slug,
-        excerpt,
-        content,
-        category,
-        image,
-        JSON.stringify(tags || [])
-    ]);
+            JSON.stringify(tagList)
+        ]);
 
-    res.redirect("/admin");
+        await savePostExtras(result.insertId, { ...req.body, tags: tagList });
+
+        res.redirect("/admin");
+    } catch (error) {
+        safe.logError("admin-create", error);
+        res.status(500).send("Error al crear el artículo: " + error.message);
+    }
 
 });
 
 
 
 
-app.post("/createArticle", async (req, res) => {
+app.post("/createArticle", requireAdmin, async (req, res) => {
 
     console.log("BODY:", req.body);
 
@@ -1048,7 +1012,11 @@ app.post("/createArticle", async (req, res) => {
 
         article = article.output;
 
-        console.log(article);
+        // La IA a veces devuelve el JSON como texto
+        if (typeof article === "string") {
+            try { article = JSON.parse(article.replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch { article = {}; }
+        }
+        article = article || {};
 
 
         if (
@@ -1101,9 +1069,12 @@ app.post("/createArticle", async (req, res) => {
         ]);
 
 
+        await savePostExtras(result.insertId, { ...article, tags });
+
         res.status(201).json({
             success: true,
             post_id: result.insertId,
+            topics: rec.parseTopics(article.topics).length,
             title: article.title,
             slug: article.slug
         });

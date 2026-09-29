@@ -25,15 +25,7 @@
     >
 
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-W0JR7YHY4C"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-W0JR7YHY4C');
-</script>
+<%- include("partials/analytics") %>
 <body>
 
 <main id="homepage">
@@ -134,9 +126,9 @@
 
             <div class="trending-posts-grid">
 
-                <% trendingPosts.forEach(post => { %>
+                <% trendingPosts.forEach((post, i) => { %>
 
-                <article class="post-card card-linked">
+                <article class="post-card card-linked" data-rec-pl="home" data-rec-pos="<%= i %>" data-pid="<%= post.id %>">
 
                     <div class="post-card-inner">
 
@@ -287,19 +279,34 @@
                     For You
                 </h2>
 
-                <span class="section-subtitle">
-                    Recommended based on your interests
-                </span>
+                <a href="/for-you" class="section-link" rel="nofollow">
+                    See more →
+                </a>
 
             </div>
 
-            <div class="foryou-grid" id="foryou-grid">
+            <div class="foryou-grid" id="foryou-grid" data-foryou data-size="6">
                 <!-- cargado por JS -->
             </div>
 
         </div>
 
     </section>
+
+    <% if (typeof popularTopics !== "undefined" && popularTopics && popularTopics.length) { %>
+    <section class="popular-topics-section" aria-labelledby="topics-title">
+        <div class="content-container">
+            <div class="section-header">
+                <h2 id="topics-title" class="section-title">Popular Topics</h2>
+            </div>
+            <div class="sidebar-pills">
+                <% popularTopics.forEach(t => { %>
+                <a href="/topic/<%= t.slug %>" class="sidebar-pill"><%= t.name %></a>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+    <% } %>
 
 
     <!-- RANDOM CATEGORY -->
@@ -380,56 +387,7 @@
 
 <script src="/js/main.js"></script>
 
-<!-- FOR YOU: recomendaciones -->
-<script>
-(function () {
-    function esc(str) {
-        return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
-
-    var cats = [], seen = [];
-    try {
-        cats = JSON.parse(localStorage.getItem('sf_cats') || '[]');
-        seen = JSON.parse(localStorage.getItem('sf_seen') || '[]');
-    } catch (e) {}
-
-    var counts = cats.reduce(function (acc, c) { acc[c] = (acc[c] || 0) + 1; return acc; }, {});
-    var topCats = Object.keys(counts)
-        .sort(function (a, b) { return counts[b] - counts[a]; })
-        .slice(0, 3);
-
-    var params = new URLSearchParams();
-    if (topCats.length) params.set('cats', topCats.join(','));
-    if (seen.length) params.set('exclude', seen.slice(-20).join(','));
-
-    fetch('/api/para-ti?' + params.toString())
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (!data || !data.success || !data.posts || !data.posts.length) return;
-
-            var grid = document.getElementById('foryou-grid');
-
-            grid.innerHTML = data.posts.map(function (p) {
-                var excerpt = String(p.excerpt || '');
-                if (excerpt.length > 100) excerpt = excerpt.substring(0, 100).trim() + '…';
-
-                return '<article class="foryou-card card-linked">' +
-                    (p.image ? '<img src="' + esc(p.image) + '" alt="' + esc(p.title) + '" loading="lazy">' : '') +
-                    '<div class="foryou-card-body">' +
-                        (p.category ? '<a href="/category/' + encodeURIComponent(String(p.category).toLowerCase()) + '" class="card-category card-category-link">' + esc(p.category) + '</a>' : '') +
-                        '<h3><a href="/article/' + encodeURIComponent(p.slug) + '" class="stretched-link">' + esc(p.title) + '</a></h3>' +
-                        (excerpt ? '<p>' + esc(excerpt) + '</p>' : '') +
-                    '</div>' +
-                '</article>';
-            }).join('');
-
-            document.getElementById('foryou-section').style.display = 'block';
-        })
-        .catch(function () {});
-})();
-</script>
+<script src="/js/foryou.js" defer></script>
 
 </body>
 </html>

@@ -1,0 +1,40 @@
+<%- include('../partials/legal-start') %>
+<p>This policy explains how SocialsForce processes personal data in accordance with Regulation (EU) 2016/679 (GDPR), Spanish Organic Law 3/2018 (LOPDGDD) and Law 34/2002 (LSSI-CE).</p>
+
+<h2>1. Data controller</h2>
+<div class="legal-box"><p><strong><%= legal.owner %></strong> · <%= legal.taxId %><br><%= legal.address %><br>Email: <%= legal.email %></p></div>
+
+<h2>2. What data we process and why</h2>
+<table>
+    <thead><tr><th>Activity</th><th>Data</th><th>Purpose</th><th>Legal basis</th></tr></thead>
+    <tbody>
+        <tr><td>Serving the website</td><td>IP address, browser, pages requested (server logs)</td><td>Deliver the site, security and abuse prevention</td><td>Legitimate interest (Art. 6.1.f GDPR)</td></tr>
+        <tr><td>Basic reading statistics</td><td>Article viewed, reading time, scroll depth, traffic source, device type. Not linked to an identifier unless you consent to personalization</td><td>Know which articles are read and improve the publication</td><td>Legitimate interest (Art. 6.1.f GDPR); aggregated statistics</td></tr>
+        <tr><td>Personalized recommendations (“For You”)</td><td>A random pseudonymous identifier, articles read, reading engagement and inferred interests (categories and topics)</td><td>Recommend articles that match your interests</td><td>Consent (Art. 6.1.a GDPR)</td></tr>
+        <tr><td>Web analytics (Google Analytics)</td><td>Online identifiers, pages visited, approximate location, device</td><td>Audience measurement</td><td>Consent (Art. 6.1.a GDPR)</td></tr>
+        <tr><td>Advertising (not active yet)</td><td>Online identifiers and ad interactions</td><td>Show and measure ads</td><td>Consent (Art. 6.1.a GDPR)</td></tr>
+        <tr><td>Contact by email</td><td>Name, email and message</td><td>Answer your request</td><td>Consent and, where applicable, pre-contractual measures</td></tr>
+    </tbody>
+</table>
+<p>We do not create profiles that produce legal effects on you and we do not process special categories of data. The site is not directed at children under 14.</p>
+
+<h2>3. Retention</h2>
+<ul>
+    <li>Pseudonymous identifier and interest profile: up to 12 months from your last visit, or until you withdraw consent.</li>
+    <li>Individual reading records: up to 13 months; afterwards only aggregated statistics are kept.</li>
+    <li>Server logs: up to 12 months for security purposes.</li>
+    <li>Email correspondence: for as long as needed to handle the request and legal limitation periods.</li>
+</ul>
+
+<h2>4. Recipients and international transfers</h2>
+<p>We do not sell personal data. Data may be accessed by service providers acting as processors: hosting (Hostinger), analytics (Google Ireland Ltd.) and, if activated, advertising partners. Google may transfer data to the United States under the EU-US Data Privacy Framework and Standard Contractual Clauses.</p>
+
+<h2>5. Your rights</h2>
+<p>You may exercise your rights of access, rectification, erasure, objection, restriction and portability, and withdraw consent at any time, by writing to <%= legal.email %>. You can also withdraw consent and delete your recommendation profile instantly from <button type="button" class="inline-link-button" data-open-consent>Cookie settings</button>. If you believe your rights have not been respected, you may lodge a complaint with the Spanish Data Protection Agency (<a href="https://www.aepd.es" rel="noopener" target="_blank">www.aepd.es</a>).</p>
+
+<h2>6. Security</h2>
+<p>We apply reasonable technical and organisational measures to protect personal data, including pseudonymisation of recommendation data and restricted access to the database.</p>
+
+<h2>7. Changes</h2>
+<p>We may update this policy. The date at the top shows the latest version.</p>
+<%- include('../partials/legal-end') %>

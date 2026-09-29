@@ -1,0 +1,178 @@
+<%
+const ins = (typeof insights !== "undefined" && insights) ? insights : null;
+const n = (v, d = 0) => (v === null || v === undefined || v === "" || isNaN(Number(v))) ? "—" : Number(v).toLocaleString("en-US", { maximumFractionDigits: d });
+const safeJson = (o) => JSON.stringify(o || null).replace(/</g, "\\u003c");
+const fmtSec = (s) => { s = Number(s) || 0; return s >= 60 ? Math.floor(s / 60) + "m " + (s % 60) + "s" : s + "s"; };
+%>
+<link rel="stylesheet" href="/css/admin-insights.css">
+
+<% if (!ins) { %>
+<section class="admin-card"><p>Reading analytics are temporarily unavailable. The rest of the dashboard works normally.</p></section>
+<% } else { const k = ins.kpis || {}; %>
+
+<% if (typeof jobsDone !== "undefined" && jobsDone) { %>
+<div class="ins-flash">Statistics and similarities recalculated.</div>
+<% } %>
+
+<div class="admin-stats-grid ins-kpis">
+    <div class="admin-stat-card"><span class="admin-stat-label">Reads 24h</span><strong class="admin-stat-value"><%= n(k.views24h) %></strong><span class="admin-stat-description"><%= n(k.views7d) %> in 7 days</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-label">Avg. active time</span><strong class="admin-stat-value"><%= k.avgSeconds != null ? fmtSec(k.avgSeconds) : "—" %></strong><span class="admin-stat-description">Scroll <%= n(k.avgScroll) %>% · 7 days</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-label">Engagement</span><strong class="admin-stat-value"><%= k.avgEngagement != null ? n(k.avgEngagement * 100) + "%" : "—" %></strong><span class="admin-stat-description">Good reads <%= n(k.goodReadRate, 1) %>% · Bounce <%= n(k.bounceRate, 1) %>%</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-label">Recommendation CTR</span><strong class="admin-stat-value"><%= k.recCtr != null ? n(k.recCtr, 2) + "%" : "—" %></strong><span class="admin-stat-description"><%= n(k.recImpressions) %> impressions · 7 days</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-label">Identified visitors</span><strong class="admin-stat-value"><%= n(k.visitors7d) %></strong><span class="admin-stat-description"><%= n(k.consentRate, 1) %>% of reads with personalization consent</span></div>
+</div>
+
+<div class="ins-grid">
+    <section class="admin-card ins-wide">
+        <div class="admin-card-header"><div><h2>Reads per day</h2><p>Last 30 days · reads and average engagement</p></div></div>
+        <div class="ins-chart"><canvas id="chDaily"></canvas></div>
+    </section>
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Traffic sources</h2><p>Where readers come from · 7 days</p></div></div>
+        <div class="ins-chart"><canvas id="chSources"></canvas></div>
+    </section>
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Recommendation CTR</h2><p>By placement · 7 days</p></div></div>
+        <div class="ins-chart"><canvas id="chCtr"></canvas></div>
+    </section>
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Categories</h2><p>Reads and engagement · 30 days</p></div></div>
+        <div class="ins-chart"><canvas id="chCats"></canvas></div>
+    </section>
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Reading hours</h2><p>Reads per hour (server time) · 7 days</p></div></div>
+        <div class="ins-chart"><canvas id="chHours"></canvas></div>
+    </section>
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Devices</h2><p>Identified visitors · 30 days</p></div></div>
+        <div class="ins-chart"><canvas id="chDevices"></canvas></div>
+    </section>
+</div>
+
+<div class="admin-dashboard-grid">
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Most engaging articles</h2><p>Min. 5 reads · 30 days</p></div></div>
+        <% if ((ins.tables.topEngagement || []).length) { %>
+        <table class="ins-table"><thead><tr><th>Article</th><th>Reads</th><th>Eng.</th><th>Time</th><th>Scroll</th></tr></thead><tbody>
+        <% ins.tables.topEngagement.forEach(r => { %>
+            <tr><td><a href="/article/<%= r.slug %>" target="_blank"><%= r.title %></a></td><td><%= n(r.views) %></td><td><%= n(r.engagement * 100) %>%</td><td><%= fmtSec(r.seconds) %></td><td><%= n(r.scroll) %>%</td></tr>
+        <% }) %>
+        </tbody></table>
+        <% } else { %><p class="ins-empty">Not enough data yet.</p><% } %>
+    </section>
+
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Trending now</h2><p>Trend score from post_stats</p></div></div>
+        <% if ((ins.tables.trendingNow || []).length) { %>
+        <table class="ins-table"><thead><tr><th>Article</th><th>1h</th><th>24h</th><th>7d</th><th>CTR</th></tr></thead><tbody>
+        <% ins.tables.trendingNow.forEach(r => { %>
+            <tr><td><a href="/article/<%= r.slug %>" target="_blank"><%= r.title %></a></td><td><%= n(r.views_1h) %></td><td><%= n(r.views_24h) %></td><td><%= n(r.views_7d) %></td><td><%= n(r.ctr, 1) %>%</td></tr>
+        <% }) %>
+        </tbody></table>
+        <% } else { %><p class="ins-empty">No data yet (it is computed every 10 minutes).</p><% } %>
+    </section>
+</div>
+
+<div class="admin-dashboard-grid">
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>Top topics</h2><p>Reads in the last 7 days</p></div></div>
+        <% if ((ins.tables.topics || []).length) { %>
+        <table class="ins-table"><thead><tr><th>Topic</th><th>Articles</th><th>Reads 7d</th></tr></thead><tbody>
+        <% ins.tables.topics.forEach(r => { %>
+            <tr><td><a href="/topic/<%= r.slug %>" target="_blank"><%= r.name %></a></td><td><%= n(r.posts) %></td><td><%= n(r.views7d) %></td></tr>
+        <% }) %>
+        </tbody></table>
+        <% } else { %><p class="ins-empty">No topics yet.</p><% } %>
+    </section>
+
+    <section class="admin-card">
+        <div class="admin-card-header"><div><h2>High bounce</h2><p>Min. 10 reads · readers leave quickly</p></div></div>
+        <% if ((ins.tables.highBounce || []).length) { %>
+        <table class="ins-table"><thead><tr><th>Article</th><th>Reads</th><th>Bounce</th></tr></thead><tbody>
+        <% ins.tables.highBounce.forEach(r => { %>
+            <tr><td><a href="/article/<%= r.slug %>" target="_blank"><%= r.title %></a></td><td><%= n(r.views) %></td><td><%= n(r.bounce) %>%</td></tr>
+        <% }) %>
+        </tbody></table>
+        <% } else { %><p class="ins-empty">Not enough data yet.</p><% } %>
+    </section>
+</div>
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div><h2>System health</h2><p>Features detected in the database, background jobs and caught errors</p></div>
+        <form method="POST" action="/admin/jobs/run"><button class="admin-primary-button" type="submit">Recalculate now</button></form>
+    </div>
+    <div class="ins-features">
+        <% Object.entries(ins.features || {}).forEach(([key, on]) => { %>
+        <span class="ins-feature <%= on ? 'on' : 'off' %>"><%= on ? "✓" : "✗" %> <%= key %></span>
+        <% }) %>
+    </div>
+    <table class="ins-table">
+        <thead><tr><th>Job</th><th>Last run</th><th>Status</th><th>Info</th></tr></thead>
+        <tbody>
+        <% const jobsList = Object.entries((ins.health && ins.health.jobs) || {}); %>
+        <% if (!jobsList.length) { %><tr><td colspan="4">Jobs start 5 seconds after the server boots.</td></tr><% } %>
+        <% jobsList.forEach(([name, j]) => { %>
+            <tr><td><%= name %></td><td><%= j.lastRun ? new Date(j.lastRun).toLocaleString("en-GB") : "—" %></td><td><%= j.ok ? "OK" : "Error" %> (<%= n(j.ms) %> ms)</td><td><%= j.ok ? (j.info || "") : j.error %></td></tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <% if (ins.health && ins.health.errors.length) { %>
+    <details class="ins-errors"><summary><%= ins.health.errors.length %> recent errors (the site kept working)</summary>
+        <ul><% ins.health.errors.forEach(e => { %><li><code><%= new Date(e.at).toLocaleString("en-GB") %> · <%= e.area %></code> <%= e.message %></li><% }) %></ul>
+    </details>
+    <% } %>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var C = <%- safeJson(ins.charts) %> || {};
+    if (!window.Chart) return;
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    Chart.defaults.plugins.legend.labels.boxWidth = 12;
+    var palette = ["#111827", "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed", "#0891b2", "#db2777", "#65a30d", "#ea580c"];
+    function empty(id) {
+        var c = document.getElementById(id);
+        if (c) c.parentNode.innerHTML = '<p class="ins-empty">No data yet.</p>';
+    }
+    function make(id, rows, cfg) {
+        if (!rows || !rows.length) return empty(id);
+        try { new Chart(document.getElementById(id), cfg); } catch (e) { empty(id); }
+    }
+    var opts = { responsive: true, maintainAspectRatio: false };
+
+    make("chDaily", C.daily, { type: "bar", data: {
+        labels: (C.daily || []).map(function (r) { return String(r.d).slice(0, 10); }),
+        datasets: [
+            { label: "Reads", data: (C.daily || []).map(function (r) { return +r.views; }), backgroundColor: "#111827", yAxisID: "y" },
+            { label: "Engagement %", type: "line", data: (C.daily || []).map(function (r) { return Math.round(r.engagement * 100); }), borderColor: "#2563eb", yAxisID: "y1", tension: .3 }
+        ] }, options: Object.assign({}, opts, { scales: { y: { beginAtZero: true }, y1: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false } } } }) });
+
+    make("chSources", C.sources, { type: "doughnut", data: {
+        labels: (C.sources || []).map(function (r) { return r.label; }),
+        datasets: [{ data: (C.sources || []).map(function (r) { return +r.value; }), backgroundColor: palette }] }, options: opts });
+
+    make("chCtr", C.ctr, { type: "bar", data: {
+        labels: (C.ctr || []).map(function (r) { return r.label; }),
+        datasets: [{ label: "CTR %", data: (C.ctr || []).map(function (r) { return +r.ctr; }), backgroundColor: "#2563eb" }] }, options: opts });
+
+    make("chCats", C.categories, { type: "bar", data: {
+        labels: (C.categories || []).map(function (r) { return r.label; }),
+        datasets: [
+            { label: "Reads", data: (C.categories || []).map(function (r) { return +r.views; }), backgroundColor: "#111827", yAxisID: "y" },
+            { label: "Engagement %", data: (C.categories || []).map(function (r) { return Math.round(r.engagement * 100); }), backgroundColor: "#16a34a", yAxisID: "y1" }
+        ] }, options: Object.assign({}, opts, { scales: { y: { beginAtZero: true }, y1: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false } } } }) });
+
+    var hours = new Array(24).fill(0);
+    (C.hours || []).forEach(function (r) { hours[+r.h] = +r.value; });
+    make("chHours", C.hours, { type: "line", data: {
+        labels: hours.map(function (_, i) { return i + "h"; }),
+        datasets: [{ label: "Reads", data: hours, borderColor: "#7c3aed", backgroundColor: "rgba(124,58,237,.12)", fill: true, tension: .35 }] }, options: opts });
+
+    make("chDevices", C.devices, { type: "pie", data: {
+        labels: (C.devices || []).map(function (r) { return r.label; }),
+        datasets: [{ data: (C.devices || []).map(function (r) { return +r.value; }), backgroundColor: palette }] }, options: opts });
+})();
+</script>
+<% } %>

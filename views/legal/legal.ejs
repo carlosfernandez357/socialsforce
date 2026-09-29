@@ -1,0 +1,27 @@
+<%- include('../partials/legal-start') %>
+<p>In compliance with Article 10 of Spanish Law 34/2002 on Information Society Services and Electronic Commerce (LSSI-CE), the following information about the owner of this website is provided:</p>
+<div class="legal-box">
+    <p><strong>Owner:</strong> <%= legal.owner %><br>
+    <strong>Tax ID (NIF/CIF):</strong> <%= legal.taxId %><br>
+    <strong>Address:</strong> <%= legal.address %><br>
+    <strong>Email:</strong> <%= legal.email %><br>
+    <% if (legal.registry) { %><strong>Registry details:</strong> <%= legal.registry %><br><% } %>
+    <strong>Website:</strong> socialsforce.com</p>
+</div>
+
+<h2>1. Purpose</h2>
+<p>SocialsForce is a digital publication offering news, analysis and content about technology, the internet, gaming, artificial intelligence and digital culture. Access to the website is free and does not require registration.</p>
+
+<h2>2. Terms of use</h2>
+<p>Use of this website is governed by our <a href="/terms">Terms of Use</a>. Personal data processing is described in the <a href="/privacy">Privacy Policy</a> and the use of cookies in the <a href="/cookies">Cookie Policy</a>.</p>
+
+<h2>3. Intellectual and industrial property</h2>
+<p>All content on this website (texts, images, design, logos, source code and editorial selection) belongs to the owner or is used under licence or legal exception, and is protected by intellectual and industrial property law. Reproduction, distribution, public communication or transformation without written authorisation is forbidden, except for brief quotations with a link to the original source as permitted by Article 32 of the Spanish Intellectual Property Law.</p>
+<p>Trademarks, trade names and logos of third parties mentioned belong to their respective owners and are used for informational purposes only.</p>
+
+<h2>4. Liability</h2>
+<p>The owner works to keep information accurate and up to date, but does not guarantee the absence of errors and is not liable for decisions made based on published content. Some content may be prepared with the help of automated tools and is reviewed editorially. The owner is not responsible for the content of third-party websites linked from this site; links are provided for information only.</p>
+
+<h2>5. Applicable law and jurisdiction</h2>
+<p>This legal notice is governed by Spanish law. For any dispute, the parties submit to the courts that are competent under applicable law; where the user is a consumer, the courts of the consumer's place of residence.</p>
+<%- include('../partials/legal-end') %>

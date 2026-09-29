@@ -81,6 +81,14 @@
                 Terms
             </a>
 
+            <a href="/legal" class="footer-link">
+                Legal notice
+            </a>
+
+            <button type="button" class="footer-link footer-link-button" data-open-consent>
+                Cookie settings
+            </button>
+
         </div>
 
     </div>
@@ -95,3 +103,7 @@
     </div>
 
 </footer>
+
+<%- include("consent") %>
+<script src="/js/consent.js" defer></script>
+<script src="/js/tracker.js" defer></script>

@@ -94,7 +94,7 @@ if (seoType === "article" && seoPost) {
 %>
     <title><%= seoTitle %></title>
     <meta name="description" content="<%= seoDescription %>">
-    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="robots" content="<%= (typeof robots !== "undefined" && robots) ? robots : "index, follow, max-image-preview:large" %>">
     <link rel="canonical" href="<%= seoCanonical %>">
 
     <!-- Open Graph -->

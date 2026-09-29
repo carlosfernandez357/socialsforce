@@ -1,0 +1,41 @@
+<%- include('partials/page-start', { seo: {
+    title: 'For You - SocialsForce',
+    description: 'Articles recommended for you on SocialsForce.',
+    canonical: 'https://socialsforce.com/for-you',
+    robots: 'noindex, follow'
+} }) %>
+
+    <main id="foryou-page">
+        <section class="listing-page-section">
+            <div class="content-container">
+                <div class="listing-page-header">
+                    <span class="listing-page-label">Recommended</span>
+                    <h1 class="listing-page-title">For You</h1>
+                    <p class="listing-page-description">
+                        <% if (personalizationOn) { %>
+                            Stories picked from what you read, what is trending and what is new.
+                        <% } else { %>
+                            Trending and fresh stories. <button type="button" class="inline-link-button" data-open-consent>Enable personalization</button> to get recommendations based on what you read.
+                        <% } %>
+                    </p>
+                </div>
+
+                <div class="content-sidebar-layout">
+                    <div class="main-content">
+                        <section class="foryou-section foryou-section-page">
+                            <div class="foryou-grid" data-foryou data-size="12" data-infinite data-ads="6"></div>
+                        </section>
+                    </div>
+                    <aside class="sidebar" aria-label="More articles">
+                        <%- include('partials/sidebar', { sidebarData: typeof sidebarData !== "undefined" ? sidebarData : null }) %>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include("partials/footer") %>
+    <script src="/js/main.js"></script>
+    <script src="/js/foryou.js" defer></script>
+</body>
+</html>

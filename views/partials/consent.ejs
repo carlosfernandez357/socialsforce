@@ -1,0 +1,42 @@
+<%
+const _cs = (typeof consent !== "undefined" && consent) ? consent : {};
+%>
+<link rel="stylesheet" href="/css/consent.css">
+<div id="sf-consent" class="sf-consent" role="dialog" aria-modal="false" aria-labelledby="sf-consent-title" <%= _cs.set ? "hidden" : "" %>>
+    <div class="sf-consent-box">
+        <h2 id="sf-consent-title" class="sf-consent-title">We value your privacy</h2>
+        <p class="sf-consent-text">
+            We use strictly necessary cookies to run this site. With your permission we also use cookies to
+            measure traffic (Google Analytics), to recommend articles based on what you read, and, in the future,
+            for advertising. You can accept, reject or configure them, and change your choice at any time from
+            “Cookie settings” in the footer. More information in our
+            <a href="/cookies">Cookie Policy</a> and <a href="/privacy">Privacy Policy</a>.
+        </p>
+
+        <form class="sf-consent-prefs" hidden>
+            <label class="sf-consent-row">
+                <span><strong>Strictly necessary</strong><small>Security, admin session and remembering your cookie choice.</small></span>
+                <input type="checkbox" checked disabled>
+            </label>
+            <label class="sf-consent-row">
+                <span><strong>Analytics</strong><small>Anonymous statistics with Google Analytics.</small></span>
+                <input type="checkbox" name="a" <%= _cs.analytics ? "checked" : "" %>>
+            </label>
+            <label class="sf-consent-row">
+                <span><strong>Personalization</strong><small>Remember what you read to recommend articles (“For You”).</small></span>
+                <input type="checkbox" name="p" <%= _cs.personalization ? "checked" : "" %>>
+            </label>
+            <label class="sf-consent-row">
+                <span><strong>Advertising</strong><small>Personalized ads and ad measurement (not active yet).</small></span>
+                <input type="checkbox" name="m" <%= _cs.marketing ? "checked" : "" %>>
+            </label>
+        </form>
+
+        <div class="sf-consent-actions">
+            <button type="button" class="sf-btn sf-btn-ghost" data-consent="config">Configure</button>
+            <button type="button" class="sf-btn sf-btn-ghost" data-consent="save" hidden>Save choices</button>
+            <button type="button" class="sf-btn sf-btn-secondary" data-consent="reject">Reject all</button>
+            <button type="button" class="sf-btn sf-btn-primary" data-consent="accept">Accept all</button>
+        </div>
+    </div>
+</div>

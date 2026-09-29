@@ -76,9 +76,15 @@ async function getSidebarData(db, excludePostId = null) {
             LIMIT 4
         `, [excludeId]);
 
+        // Trending con el nuevo motor (post_stats); si no devuelve nada se usa la fórmula clásica
+        let trending = [];
+        try {
+            trending = await require("./recommend").getTrending(4, { exclude: excludePostId ? [excludePostId] : [] });
+        } catch (e) { trending = []; }
+
         return {
             sidebarCategory,
-            sidebarTrending,
+            sidebarTrending: trending.length ? trending : sidebarTrending,
             sidebarCategories
         };
 

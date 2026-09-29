@@ -6,7 +6,7 @@ OUTPUT FORMAT
 
 Return ONLY valid RFC 8259 JSON using exactly this structure:
 
-{"title":"...","slug":"...","excerpt":"...","content":"...","category":"..."}
+{"title":"...","slug":"...","excerpt":"...","content":"...","category":"...","topics":[{"name":"...","weight":8}],"evergreen":3,"depth":5}
 
 Do not include Markdown, code fences, explanations, comments, introductory text, or any characters before or after the JSON object.
 
@@ -19,6 +19,9 @@ FIELDS
 * "excerpt": Short summary suitable for previews, cards and search results.
 * "content": The complete article as HTML.
 * "category": The single most appropriate category from the allowed category list.
+* "topics": Array of 3 to 8 objects {"name": string, "weight": integer 1-10} with the specific entities and subjects the article is about (companies, products, people, technologies, events, concepts). Use short canonical names in English (e.g. "OpenAI", "GPT-5", "EU AI Act"), without duplicates. Weight 10 = main subject, 1 = briefly mentioned. Used for recommendations and topic pages; never invent topics not covered by the article.
+* "evergreen": Integer 0-10. How long the article stays relevant: 0 = breaking news that expires in hours, 5 = relevant for weeks, 10 = timeless guide or explainer.
+* "depth": Integer 1-10. 1 = short news brief, 5 = standard article, 10 = long in-depth analysis.
 
 ALLOWED CATEGORIES
 
@@ -65,7 +68,7 @@ FINAL VALIDATION
 Before responding, internally verify that:
 
 1. The response is valid RFC 8259 JSON.
-2. It contains exactly the required five top-level fields.
+2. It contains exactly the required eight top-level fields (title, slug, excerpt, content, category, topics, evergreen, depth).
 3. "content" contains valid, properly escaped HTML.
 4. No unsupported factual claims were invented.
 5. The category belongs to the allowed category list.
