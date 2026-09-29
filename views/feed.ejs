@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll - SocialsForce</title>
-    <meta name="robots" content="noindex, follow">
     <link rel="icon" href="/images/logo.png" type="image/png">
+    <%- include('partials/seo', {
+        title: 'Scroll - SocialsForce',
+        description: 'Vertical feed of stories on SocialsForce.',
+        canonicalUrl: 'https://socialsforce.com/feed',
+        ogImage: '/images/logo.png',
+        pageType: 'website',
+        robots: 'noindex, follow'
+    }) %>
     <link rel="stylesheet" href="/css/home-feed.css">
 </head>
 <body class="feed-body">

@@ -10,14 +10,15 @@
         content="width=device-width, initial-scale=1.0"
     >
     <link rel="icon" href="/images/logo.png" type="image/png">
-    <title>
-        <%= category %> - SocialsForce
-    </title>
 
-    <meta
-        name="description"
-        content="Latest <%= category %> news, stories and trends on SocialsForce."
-    >
+    <%- include('partials/seo', {
+        title: category + ' - SocialsForce',
+        description: 'Latest ' + category + ' news, stories and trends on SocialsForce.',
+        canonicalUrl: 'https://socialsforce.com/category/' + encodeURIComponent(String(category).toLowerCase()),
+        ogImage: '/images/logo.png',
+        pageType: 'website',
+        robots: 'index, follow, max-image-preview:large'
+    }) %>
 
     <link
         rel="stylesheet"

@@ -12,12 +12,14 @@
 
     <link rel="icon" href="/images/logo.png" type="image/png">
 
-    <title>Categories - SocialsForce</title>
-
-    <meta
-        name="description"
-        content="Explore all SocialsForce categories and discover the latest stories in AI, technology, gaming, internet and more."
-    >
+    <%- include('partials/seo', {
+        title: 'Categories - SocialsForce',
+        description: 'Explore all SocialsForce categories and discover the latest stories in AI, technology, gaming, internet and more.',
+        canonicalUrl: 'https://socialsforce.com/categories',
+        ogImage: '/images/logo.png',
+        pageType: 'website',
+        robots: 'index, follow, max-image-preview:large'
+    }) %>
 
     <link
         rel="stylesheet"
@@ -40,10 +42,6 @@
         rel="stylesheet"
     >
 
-    <link
-        rel="canonical"
-        href="https://socialsforce.com/categories"
-    >
 
     <link rel="stylesheet" href="/css/sidebar.css">
 </head>

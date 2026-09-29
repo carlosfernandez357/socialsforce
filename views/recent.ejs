@@ -10,12 +10,15 @@
         content="width=device-width, initial-scale=1.0"
     >
     <link rel="icon" href="/images/logo.png" type="image/png">
-    <title>Recent News - SocialsForce</title>
 
-    <meta
-        name="description"
-        content="Discover the latest news, stories and trends published on SocialsForce."
-    >
+    <%- include('partials/seo', {
+        title: 'Latest News | SocialsForce',
+        description: 'The latest published news and updates from SocialsForce.',
+        canonicalUrl: 'https://socialsforce.com/recent',
+        ogImage: '/images/logo.png',
+        pageType: 'website',
+        robots: 'index, follow, max-image-preview:large'
+    }) %>
 
     <link
         rel="stylesheet"
@@ -37,15 +40,6 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
-
-
-    <title>Latest News | SocialsForce</title>
-
-    <meta name="description"
-        content="The latest published news and updates from SocialsForce.">
-
-    <link rel="canonical"
-        href="https://socialsforce.com/recent">
 
     <link rel="stylesheet" href="/css/sidebar.css">
 </head>
