@@ -641,131 +641,155 @@ Object.keys(LEGAL_PAGES).forEach(page => {
     });
 });
 
-async function generateSitemap(db) {
+const SITEMAP_BASE_URL = "https://socialsforce.com";
+const SITEMAP_MAIN_LIMIT = 5000;
+const SITEMAP_RECENT_LIMIT = 10000;
 
-    const baseUrl = 'https://socialsforce.com';
+function xmlEscape(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
 
-    const [posts] = await db.query(`
-        SELECT slug, updated_at
-        FROM posts
-        WHERE published_at <= NOW()
-        ORDER BY updated_at DESC
-        LIMIT 5000
-    `);
+function toUrlset(entries) {
+    const body = entries.map(item => {
+        const lastmod = item.lastmod ? `\n        <lastmod>${item.lastmod}</lastmod>` : "";
+        const changefreq = item.changefreq ? `\n        <changefreq>${item.changefreq}</changefreq>` : "";
+        const priority = item.priority ? `\n        <priority>${item.priority}</priority>` : "";
+        return `\n    <url>\n        <loc>${xmlEscape(item.loc)}</loc>${lastmod}${changefreq}${priority}\n    </url>`;
+    }).join("");
+
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}\n</urlset>`;
+}
+
+function toSitemapIndex(sitemaps) {
+    const body = sitemaps.map(item => `\n    <sitemap>\n        <loc>${xmlEscape(item.loc)}</loc>\n        <lastmod>${item.lastmod}</lastmod>\n    </sitemap>`).join("");
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}\n</sitemapindex>`;
+}
+
+async function sitemapMainEntries() {
+    const entries = [
+        { loc: `${SITEMAP_BASE_URL}/`, changefreq: "hourly", priority: "1.0" },
+        { loc: `${SITEMAP_BASE_URL}/trending`, changefreq: "hourly", priority: "0.9" },
+        { loc: `${SITEMAP_BASE_URL}/recent`, changefreq: "hourly", priority: "0.9" },
+        { loc: `${SITEMAP_BASE_URL}/categories`, changefreq: "daily", priority: "0.8" }
+    ];
+
+    ["about", "contact", "advertising", "privacy", "cookies", "terms", "legal"].forEach(page => {
+        entries.push({ loc: `${SITEMAP_BASE_URL}/${page}`, changefreq: "yearly", priority: "0.3" });
+    });
 
     const [categories] = await db.query(`
         SELECT DISTINCT category
         FROM posts
         WHERE category IS NOT NULL
-        AND category != ''
+          AND category != ''
+          AND published_at <= NOW()
         LIMIT 300
     `);
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-    <url>
-        <loc>${baseUrl}/</loc>
-        <changefreq>hourly</changefreq>
-        <priority>1.0</priority>
-    </url>
-
-    <url>
-        <loc>${baseUrl}/trending</loc>
-        <changefreq>hourly</changefreq>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>${baseUrl}/recent</loc>
-        <changefreq>hourly</changefreq>
-        <priority>0.9</priority>
-    </url>
-
-    <url>
-        <loc>${baseUrl}/categories</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-    </url>
-`;
-
-    ["about", "contact", "advertising", "privacy", "cookies", "terms", "legal"].forEach(page => {
-        xml += `
-    <url>
-        <loc>${baseUrl}/${page}</loc>
-        <changefreq>yearly</changefreq>
-        <priority>0.3</priority>
-    </url>
-`;
+    categories.forEach(row => {
+        entries.push({
+            loc: `${SITEMAP_BASE_URL}/category/${encodeURIComponent(String(row.category).toLowerCase())}`,
+            changefreq: "daily",
+            priority: "0.8"
+        });
     });
 
     if (safe.features().topics) {
         const topics = await safe.q(`
-            SELECT t.slug FROM topics t
+            SELECT t.slug
+            FROM topics t
             JOIN post_topics pt ON pt.topic_id = t.id
             GROUP BY t.id, t.slug
             HAVING COUNT(*) >= 2
             LIMIT 300
         `, [], [], "sitemap");
+
         topics.forEach(t => {
-            xml += `
-    <url>
-        <loc>${baseUrl}/topic/${encodeURIComponent(t.slug)}</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.6</priority>
-    </url>
-`;
+            entries.push({
+                loc: `${SITEMAP_BASE_URL}/topic/${encodeURIComponent(t.slug)}`,
+                changefreq: "daily",
+                priority: "0.6"
+            });
         });
     }
 
-    categories.forEach(category => {
+    const [relevantPosts] = await db.query(`
+        SELECT slug, updated_at
+        FROM posts
+        WHERE published_at <= NOW()
+        ORDER BY views DESC, updated_at DESC
+        LIMIT ?
+    `, [SITEMAP_MAIN_LIMIT]);
 
-        xml += `
-    <url>
-        <loc>${baseUrl}/category/${encodeURIComponent(category.category.toLowerCase())}</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-    </url>
-`;
-
+    relevantPosts.forEach(post => {
+        entries.push({
+            loc: `${SITEMAP_BASE_URL}/article/${post.slug}`,
+            lastmod: new Date(post.updated_at).toISOString(),
+            changefreq: "weekly",
+            priority: "0.8"
+        });
     });
 
-    posts.forEach(post => {
-
-        xml += `
-    <url>
-        <loc>${baseUrl}/article/${post.slug}</loc>
-        <lastmod>${new Date(post.updated_at).toISOString()}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
-    </url>
-`;
-
-    });
-
-    xml += `
-</urlset>`;
-
-    return xml;
+    return entries;
 }
 
-app.get('/sitemap.xml', async (req, res) => {
+async function sitemapRecentEntries() {
+    const [posts] = await db.query(`
+        SELECT slug, updated_at
+        FROM posts
+        WHERE published_at <= NOW()
+        ORDER BY published_at DESC, updated_at DESC
+        LIMIT ?
+    `, [SITEMAP_RECENT_LIMIT]);
 
+    return posts.map(post => ({
+        loc: `${SITEMAP_BASE_URL}/article/${post.slug}`,
+        lastmod: new Date(post.updated_at).toISOString(),
+        changefreq: "daily",
+        priority: "0.7"
+    }));
+}
+
+app.get('/sitemap-main.xml', async (req, res) => {
     try {
-
-        const sitemap = await generateSitemap(db);
-
+        const sitemap = toUrlset(await sitemapMainEntries());
         res.header('Content-Type', 'application/xml');
         res.send(sitemap);
-
     } catch (error) {
-
         console.error(error);
-        res.status(500).send('Error generating sitemap');
-
+        res.status(500).send('Error generating sitemap-main');
     }
+});
 
+app.get('/sitemap-recent.xml', async (req, res) => {
+    try {
+        const sitemap = toUrlset(await sitemapRecentEntries());
+        res.header('Content-Type', 'application/xml');
+        res.send(sitemap);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating sitemap-recent');
+    }
+});
+
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const now = new Date().toISOString();
+        const sitemap = toSitemapIndex([
+            { loc: `${SITEMAP_BASE_URL}/sitemap-main.xml`, lastmod: now },
+            { loc: `${SITEMAP_BASE_URL}/sitemap-recent.xml`, lastmod: now }
+        ]);
+        res.header('Content-Type', 'application/xml');
+        res.send(sitemap);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating sitemap index');
+    }
 });
 
 
