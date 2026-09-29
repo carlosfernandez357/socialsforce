@@ -359,6 +359,7 @@ app.get("/categories", async (req, res) => {
               AND published_at <= NOW()
             GROUP BY category
             ORDER BY category ASC
+            LIMIT 80
         `);
 
 
@@ -437,6 +438,7 @@ app.get("/category/:category", async (req, res) => {
             WHERE category = ?
               AND published_at <= NOW()
             ORDER BY published_at DESC
+            LIMIT 120
         `, [category]);
 
 
@@ -648,6 +650,7 @@ async function generateSitemap(db) {
         FROM posts
         WHERE published_at <= NOW()
         ORDER BY updated_at DESC
+        LIMIT 5000
     `);
 
     const [categories] = await db.query(`
@@ -655,6 +658,7 @@ async function generateSitemap(db) {
         FROM posts
         WHERE category IS NOT NULL
         AND category != ''
+        LIMIT 300
     `);
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -702,6 +706,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
             JOIN post_topics pt ON pt.topic_id = t.id
             GROUP BY t.id, t.slug
             HAVING COUNT(*) >= 2
+            LIMIT 300
         `, [], [], "sitemap");
         topics.forEach(t => {
             xml += `
