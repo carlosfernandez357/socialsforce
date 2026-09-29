@@ -45,6 +45,7 @@
         href="https://socialsforce.com/categories"
     >
 
+    <link rel="stylesheet" href="/css/sidebar.css">
 </head>
 
 <!-- Google tag (gtag.js) -->
@@ -86,6 +87,10 @@
 
                 </div>
 
+
+                <div class="content-sidebar-layout">
+
+                <div class="main-content">
 
                 <% categories.forEach(category => { %>
 
@@ -182,6 +187,15 @@
                 </section>
 
                 <% }) %>
+
+                </div>
+
+                <aside class="sidebar" aria-label="More articles">
+                    <%- include('partials/sidebar', { sidebarData: typeof sidebarData !== "undefined" ? sidebarData : null }) %>
+                </aside>
+
+                </div>
+
 
 
             </div>

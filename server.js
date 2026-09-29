@@ -361,8 +361,11 @@ app.get("/categories", async (req, res) => {
         }
 
 
+        const sidebarData = await getSidebarData(db);
+
         res.render("categories", {
-            categories
+            categories,
+            sidebarData
         });
 
 
@@ -481,6 +484,99 @@ app.get("/search", async (req, res) => {
         sidebarData
     });
 
+});
+
+
+
+
+
+// FOR YOU — recomendaciones (con o sin historial del usuario)
+
+const FORYOU_FIELDS = "id, title, slug, excerpt, image, category, views, published_at";
+
+app.get("/api/para-ti", async (req, res) => {
+
+    try {
+
+        const cats = String(req.query.cats || "")
+            .split(",")
+            .map(c => c.trim())
+            .filter(Boolean)
+            .slice(0, 5);
+
+        const excludeIds = String(req.query.exclude || "")
+            .split(",")
+            .map(Number)
+            .filter(n => Number.isInteger(n) && n > 0)
+            .slice(0, 50);
+
+        const excludeSql = excludeIds.length
+            ? `AND id NOT IN (${excludeIds.map(() => "?").join(",")})`
+            : "";
+
+        let posts = [];
+
+        if (cats.length > 0) {
+
+            // Con historial: bonus por categorías vistas + trend score
+            const placeholders = cats.map(() => "?").join(",");
+
+            const [personal] = await db.query(`
+                SELECT ${FORYOU_FIELDS},
+                    (CASE WHEN category IN (${placeholders}) THEN 3 ELSE 0 END) +
+                    views / POW(TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2, 1.5) AS score
+                FROM posts
+                WHERE published_at <= NOW()
+                ${excludeSql}
+                ORDER BY score DESC
+                LIMIT 6
+            `, [...cats, ...excludeIds]);
+
+            posts = personal;
+
+        } else {
+
+            // Sin historial: trending reciente + variedad de categorías
+            const [trending] = await db.query(`
+                SELECT ${FORYOU_FIELDS}
+                FROM posts
+                WHERE published_at <= NOW()
+                ${excludeSql}
+                ORDER BY views / POW(TIMESTAMPDIFF(HOUR, published_at, NOW()) + 2, 1.5) DESC
+                LIMIT 3
+            `, excludeIds);
+
+            const [diverse] = await db.query(`
+                SELECT p.id, p.title, p.slug, p.excerpt, p.image, p.category, p.views, p.published_at
+                FROM posts p
+                INNER JOIN (
+                    SELECT category, MAX(id) AS max_id
+                    FROM posts
+                    WHERE published_at <= NOW()
+                      AND category IS NOT NULL
+                      AND category != ''
+                    GROUP BY category
+                    ORDER BY RAND()
+                    LIMIT 6
+                ) t ON p.id = t.max_id
+            `);
+
+            const trendingIds = new Set(trending.map(t => t.id));
+
+            posts = [
+                ...trending,
+                ...diverse.filter(d => !trendingIds.has(d.id) && !excludeIds.includes(d.id))
+            ].slice(0, 6);
+        }
+
+        res.json({ success: true, posts });
+
+    } catch (error) {
+
+        console.error("PARA TI ERROR:", error);
+
+        res.status(500).json({ success: false });
+    }
 });
 
 
