@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/home-feed.css">
     <link rel="icon" href="/images/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -187,7 +188,8 @@
 
     <section id="latest-posts-section">
 
-        <div class="content-container">
+        <div class="content-container home-with-sidebar">
+            <div class="home-main">
 
             <div class="section-header">
 
@@ -260,6 +262,8 @@
 
             </div>
 
+        </div>
+            <%- include('partials/home-sidebar') %>
         </div>
 
     </section>
