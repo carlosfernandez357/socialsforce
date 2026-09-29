@@ -1,0 +1,131 @@
+<%
+const catUrl = c => "/category/" + encodeURIComponent(String(c || "").toLowerCase());
+const ago = d => { const m = Math.max(1, Math.round((Date.now() - new Date(d)) / 60000)); return m < 60 ? m + " min" : m < 1440 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + " d"; };
+%>
+<% if (x && part === 'top') { %>
+
+    <% if (x.ticker.length) { %>
+    <div class="hx-ticker" aria-label="Latest headlines">
+        <span class="hx-ticker-label"><span class="hx-dot"></span>Live</span>
+        <div class="hx-ticker-track">
+            <div class="hx-ticker-move">
+                <% [0, 1].forEach(k => { x.ticker.forEach(p => { %>
+                <a href="/article/<%= p.slug %>" <%= k ? 'aria-hidden=true tabindex=-1' : '' %>><%= p.title %></a>
+                <% }) }) %>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <% if (x.carousel.length >= 4) { %>
+    <section class="hx-section hx-reveal" aria-labelledby="hx-carousel-title">
+        <div class="content-container">
+            <div class="section-header">
+                <h2 class="section-title hx-grad" id="hx-carousel-title">Keep scrolling</h2>
+                <a href="/feed" class="section-link">Scroll mode →</a>
+            </div>
+        </div>
+        <div class="hx-marquee">
+            <div class="hx-marquee-move">
+                <% [0, 1].forEach(k => { x.carousel.forEach(p => { %>
+                <a class="hx-mcard" href="/article/<%= p.slug %>" <%= k ? 'aria-hidden=true tabindex=-1' : '' %>>
+                    <img src="<%= p.image %>" alt="<%= k ? '' : p.title %>" loading="lazy">
+                    <span class="hx-mcard-body">
+                        <% if (p.category) { %><span class="hx-chip"><%= p.category %></span><% } %>
+                        <strong><%= p.title %></strong>
+                    </span>
+                </a>
+                <% }) }) %>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+<% } %>
+
+<% if (x && part === 'bottom') { %>
+
+    <% x.duoPairs.forEach((pair, pi) => { %>
+    <section class="hx-section hx-reveal">
+        <div class="content-container hx-duo">
+            <% pair.forEach((c, side) => { %>
+            <div class="hx-duo-col hx-duo-<%= side ? 'right' : 'left' %>">
+                <div class="section-header">
+                    <h2 class="section-title"><span class="hx-bar"></span><%= c.name %></h2>
+                    <a href="<%= catUrl(c.name) %>" class="section-link">More</a>
+                </div>
+                <% const lead = c.posts[0]; %>
+                <a class="hx-duo-lead" href="/article/<%= lead.slug %>">
+                    <% if (lead.image) { %><img src="<%= lead.image %>" alt="<%= lead.title %>" loading="lazy"><% } %>
+                    <span class="hx-duo-lead-body"><strong><%= lead.title %></strong><small><%= ago(lead.published_at) %> ago</small></span>
+                </a>
+                <ul class="hx-duo-list">
+                    <% c.posts.slice(1).forEach(p => { %>
+                    <li><a href="/article/<%= p.slug %>"><%= p.title %></a><small><%= ago(p.published_at) %></small></li>
+                    <% }) %>
+                </ul>
+            </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <% if (pi === 0 && x.spotlight) { %>
+    <section class="hx-section hx-reveal" aria-label="<%= x.spotlight.name %> spotlight">
+        <div class="content-container hx-split">
+            <div>
+                <div class="section-header">
+                    <h2 class="section-title hx-grad"><%= x.spotlight.name %> spotlight</h2>
+                    <a href="<%= catUrl(x.spotlight.name) %>" class="section-link">View all</a>
+                </div>
+                <div class="hx-spot-grid">
+                    <% x.spotlight.posts.slice(0, 4).forEach((p, i) => { %>
+                    <a class="hx-spot hx-spot-<%= i %>" href="/article/<%= p.slug %>">
+                        <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.title %>" loading="lazy"><% } %>
+                        <span><strong><%= p.title %></strong><% if (i === 0 && p.excerpt) { %><em><%= p.excerpt %></em><% } %></span>
+                    </a>
+                    <% }) %>
+                </div>
+            </div>
+            <aside class="hx-side">
+                <h3 class="hs-title">Popular lately</h3>
+                <ol class="hx-pop">
+                    <% x.popular.forEach((p, i) => { %>
+                    <li style="--d:<%= i * 80 %>ms"><span><%= String(i + 1).padStart(2, "0") %></span><a href="/article/<%= p.slug %>"><%= p.title %></a></li>
+                    <% }) %>
+                </ol>
+            </aside>
+        </div>
+    </section>
+    <% } %>
+    <% }) %>
+
+    <% if (x.discover.length >= 5) { %>
+    <section class="hx-section hx-reveal" aria-labelledby="hx-discover-title">
+        <div class="content-container">
+            <div class="section-header">
+                <h2 class="section-title hx-grad" id="hx-discover-title">Discover</h2>
+                <button type="button" class="section-link hx-shuffle" data-hx-shuffle>Shuffle ⟳</button>
+            </div>
+            <div class="hx-mosaic" data-hx-mosaic>
+                <% x.discover.forEach((p, i) => { %>
+                <a class="hx-tile hx-tile-<%= i %>" href="/article/<%= p.slug %>">
+                    <img src="<%= p.image %>" alt="<%= p.title %>" loading="lazy">
+                    <span><% if (p.category) { %><span class="hx-chip"><%= p.category %></span><% } %><strong><%= p.title %></strong></span>
+                </a>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+    <section class="hx-section hx-reveal">
+        <div class="content-container">
+            <a href="/feed" class="hx-cta">
+                <span class="hx-cta-phone"><span></span><span></span><span></span></span>
+                <span class="hx-cta-text"><strong>Try Scroll mode</strong><small>One story at a time. Swipe up for the next one.</small></span>
+                <span class="hx-cta-arrow">→</span>
+            </a>
+        </div>
+    </section>
+
+<% } %>

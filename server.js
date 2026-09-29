@@ -76,6 +76,24 @@ app.get("/", async (req, res) => {
     `, [randomCategory], [], "home") : [];
 
     const homeSidebar = await rec.getHomeSidebar();
+
+    // Secciones extra de la home: una sola consulta y reparto en memoria
+    const pool = await safe.q(`SELECT id, title, slug, excerpt, image, category, views, published_at FROM posts WHERE published_at <= NOW() ORDER BY published_at DESC LIMIT 90`, [], [], "home");
+    const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const byCat = {};
+    pool.forEach(p => { if (p.category) (byCat[p.category] = byCat[p.category] || []).push(p); });
+    const duoCats = shuffle(Object.keys(byCat).filter(c => byCat[c].length >= 3)).slice(0, 4);
+    const duoPairs = [];
+    for (let i = 0; i + 1 < duoCats.length; i += 2) duoPairs.push([duoCats[i], duoCats[i + 1]].map(c => ({ name: c, posts: byCat[c].slice(0, 4) })));
+    const spotCat = shuffle(Object.keys(byCat).filter(c => !duoCats.includes(c) && byCat[c].length >= 3))[0] || null;
+    const homeExtras = {
+        ticker: pool.slice(0, 10),
+        carousel: shuffle(pool.filter(p => p.image)).slice(0, 14),
+        duoPairs,
+        spotlight: spotCat ? { name: spotCat, posts: byCat[spotCat].slice(0, 5) } : null,
+        popular: pool.slice().sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6),
+        discover: shuffle(pool.filter(p => p.image)).slice(0, 7)
+    };
     const recentPosts = await safe.q(`SELECT id, title, slug, category, image, published_at FROM posts WHERE published_at <= NOW() ORDER BY published_at DESC LIMIT 8`, [], [], "home");
     const mostRead = await safe.q(`SELECT id, title, slug, views FROM posts WHERE published_at <= NOW() AND published_at >= NOW() - INTERVAL 30 DAY ORDER BY views DESC LIMIT 5`, [], [], "home");
 
@@ -87,7 +105,8 @@ app.get("/", async (req, res) => {
         randomCategoryPosts,
         popularTopics: homeSidebar.topics,
         recentPosts,
-        mostRead
+        mostRead,
+        homeExtras
     });
 });
 
