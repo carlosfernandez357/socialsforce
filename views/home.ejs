@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SocialsForce - News, Trends and Digital Culture</title>
-
-    <meta
-        name="description"
-        content="SocialsForce brings you the latest news, trends, technology, gaming, AI and internet culture."
-    >
+    <%- include('partials/seo', {
+        title: 'SocialsForce - News, Trends and Digital Culture',
+        description: 'Discover the latest news, tech trends, gaming, AI and internet culture on SocialsForce.',
+        canonicalUrl: 'https://socialsforce.com/',
+        ogImage: '/images/logo.png',
+        pageType: 'website'
+    }) %>
 
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" href="/images/logo.png" type="image/png">
@@ -21,24 +22,6 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
-
-    <meta name="description"
-        content="Breaking news, AI, technology, gaming and internet culture updates from around the world.">
-
-    <meta name="keywords"
-        content="news, technology, ai, gaming, internet culture, trends">
-
-    <link rel="canonical" href="https://socialsforce.com/">
-
-    <meta property="og:title"
-        content="SocialsForce - Latest News, AI, Technology & Gaming">
-
-    <meta property="og:description"
-        content="Breaking news, AI, technology, gaming and internet culture.">
-
-    <meta property="og:image"
-        content="https://socialsforce.com/images/cover.jpg">
-
 
 </head>
 <!-- Google tag (gtag.js) -->

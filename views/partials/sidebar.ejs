@@ -1,0 +1,132 @@
+<%
+const sd = (typeof sidebarData !== "undefined" && sidebarData) ? sidebarData : {};
+const sbCategory = sd.sidebarCategory || null;
+const sbTrending = sd.sidebarTrending || [];
+const sbCategories = sd.sidebarCategories || [];
+const catUrl = (name) => "/category/" + encodeURIComponent(String(name).toLowerCase());
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+%>
+<div class="sidebar-inner">
+
+    <!-- QUICK SEARCH -->
+    <section class="sidebar-block sidebar-search" aria-label="Search">
+        <form action="/search" method="get" role="search" class="sidebar-search-form">
+            <label for="sidebar-search-input" class="sidebar-visually-hidden">Search articles</label>
+            <input
+                id="sidebar-search-input"
+                type="search"
+                name="q"
+                placeholder="Search articles..."
+                autocomplete="off"
+            >
+            <button type="submit" aria-label="Search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            </button>
+        </form>
+    </section>
+
+    <!-- MORE ABOUT [CATEGORY] -->
+    <% if (sbCategory && sbCategory.posts && sbCategory.posts.length > 0) { %>
+    <section class="sidebar-block" aria-labelledby="sidebar-more-title">
+        <div class="sidebar-block-header">
+            <h2 id="sidebar-more-title" class="sidebar-title">
+                More on <a href="<%= catUrl(sbCategory.name) %>"><%= sbCategory.name %></a>
+            </h2>
+        </div>
+
+        <ul class="sidebar-post-list">
+            <% sbCategory.posts.forEach(function (p) { %>
+            <li class="sidebar-post">
+                <a href="/article/<%= p.slug %>" class="sidebar-post-link">
+                    <img
+                        src="<%= p.image || '/images/noimage.jpg' %>"
+                        alt="<%= p.title %>"
+                        class="sidebar-post-image"
+                        loading="lazy"
+                        width="72"
+                        height="54"
+                    >
+                    <div class="sidebar-post-body">
+                        <h3 class="sidebar-post-title"><%= p.title %></h3>
+                        <% if (p.published_at) { %>
+                        <time class="sidebar-post-meta" datetime="<%= new Date(p.published_at).toISOString() %>"><%= fmtDate(p.published_at) %></time>
+                        <% } %>
+                    </div>
+                </a>
+            </li>
+            <% }) %>
+        </ul>
+
+        <a href="<%= catUrl(sbCategory.name) %>" class="sidebar-more-link">
+            See everything about <%= sbCategory.name %> →
+        </a>
+    </section>
+    <% } %>
+
+    <!-- TRENDING NOW -->
+    <% if (sbTrending.length > 0) { %>
+    <section class="sidebar-block" aria-labelledby="sidebar-trending-title">
+        <div class="sidebar-block-header">
+            <h2 id="sidebar-trending-title" class="sidebar-title">Trending now</h2>
+        </div>
+
+        <ol class="sidebar-trending-list">
+            <% sbTrending.forEach(function (p, i) { %>
+            <li class="sidebar-trending-item">
+                <a href="/article/<%= p.slug %>" class="sidebar-trending-link">
+                    <span class="sidebar-rank">#<%= i + 1 %></span>
+                    <img
+                        src="<%= p.image || '/images/noimage.jpg' %>"
+                        alt="<%= p.title %>"
+                        class="sidebar-post-image"
+                        loading="lazy"
+                        width="72"
+                        height="54"
+                    >
+                    <div class="sidebar-post-body">
+                        <h3 class="sidebar-post-title"><%= p.title %></h3>
+                        <span class="sidebar-post-meta">
+                            <% if (p.category) { %><%= p.category %> · <% } %><%= Number(p.views || 0).toLocaleString("en-US") %> views
+                        </span>
+                    </div>
+                </a>
+            </li>
+            <% }) %>
+        </ol>
+
+        <a href="/trending" class="sidebar-more-link">See all trending →</a>
+    </section>
+    <% } %>
+
+    <!-- EXPLORE CATEGORIES -->
+    <% if (sbCategories.length > 0) { %>
+    <section class="sidebar-block" aria-labelledby="sidebar-categories-title">
+        <div class="sidebar-block-header">
+            <h2 id="sidebar-categories-title" class="sidebar-title">Explore categories</h2>
+        </div>
+
+        <nav class="sidebar-pills" aria-label="Categories">
+            <% sbCategories.forEach(function (name) { %>
+            <a href="<%= catUrl(name) %>" class="sidebar-pill"><%= name %></a>
+            <% }) %>
+        </nav>
+
+        <a href="/categories" class="sidebar-more-link">All categories →</a>
+    </section>
+    <% } %>
+
+    <!-- QUICK NAVIGATION -->
+    <section class="sidebar-block" aria-labelledby="sidebar-nav-title">
+        <div class="sidebar-block-header">
+            <h2 id="sidebar-nav-title" class="sidebar-title">Quick navigation</h2>
+        </div>
+
+        <nav class="sidebar-quick-nav" aria-label="Quick navigation">
+            <a href="/">Home</a>
+            <a href="/recent">Recent</a>
+            <a href="/trending">Trending</a>
+            <a href="/categories">Categories</a>
+        </nav>
+    </section>
+
+</div>

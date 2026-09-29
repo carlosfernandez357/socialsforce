@@ -1,0 +1,128 @@
+<%
+/*
+ * SEO partial
+ * Variables: title, description, canonicalUrl, ogImage, pageType ('article'|'website'), post (opcional)
+ */
+const SITE_URL = "https://socialsforce.com";
+const SITE_NAME = "SocialsForce";
+
+const seoType = (typeof pageType !== "undefined" && pageType === "article") ? "article" : "website";
+const seoPost = (typeof post !== "undefined" && post) ? post : null;
+
+const seoTitle = (typeof title !== "undefined" && title) ? title : "SocialsForce - News, Trends and Digital Culture";
+
+const rawDescription = (typeof description !== "undefined" && description)
+    ? String(description)
+    : "SocialsForce brings you the latest news, trends, technology, gaming, AI and internet culture.";
+const cleanDescription = rawDescription.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+const seoDescription = cleanDescription.length > 160
+    ? cleanDescription.slice(0, 157).trim() + "..."
+    : cleanDescription;
+
+const seoCanonical = (typeof canonicalUrl !== "undefined" && canonicalUrl) ? canonicalUrl : SITE_URL + "/";
+
+const absoluteUrl = (url) => {
+    if (!url) return SITE_URL + "/images/logo.png";
+    if (/^https?:\/\//i.test(url)) return url;
+    return SITE_URL + (url.startsWith("/") ? url : "/" + url);
+};
+const seoImage = absoluteUrl((typeof ogImage !== "undefined" && ogImage) ? ogImage : null);
+
+const toIso = (d) => {
+    if (!d) return undefined;
+    const date = new Date(d);
+    return isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+// JSON seguro dentro de <script>
+const safeJson = (obj) => JSON.stringify(obj).replace(/</g, "\\u003c");
+
+const organization = {
+    "@type": "Organization",
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "logo": { "@type": "ImageObject", "url": SITE_URL + "/images/logo.png" }
+};
+
+let jsonLd = [];
+
+if (seoType === "article" && seoPost) {
+    const published = toIso(seoPost.published_at || seoPost.created_at);
+    const modified = toIso(seoPost.updated_at) || published;
+    const categorySlug = seoPost.category ? encodeURIComponent(String(seoPost.category).toLowerCase()) : null;
+
+    jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "mainEntityOfPage": { "@type": "WebPage", "@id": seoCanonical },
+        "headline": String(seoPost.title || "").slice(0, 110),
+        "description": seoDescription,
+        "image": [seoImage],
+        "datePublished": published,
+        "dateModified": modified,
+        "articleSection": seoPost.category || undefined,
+        "author": { "@type": "Organization", "name": SITE_NAME, "url": SITE_URL },
+        "publisher": organization,
+        "url": seoCanonical
+    });
+
+    const crumbs = [{ "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL + "/" }];
+    if (seoPost.category) {
+        crumbs.push({ "@type": "ListItem", "position": 2, "name": seoPost.category, "item": SITE_URL + "/category/" + categorySlug });
+    }
+    crumbs.push({ "@type": "ListItem", "position": crumbs.length + 1, "name": seoPost.title, "item": seoCanonical });
+
+    jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": crumbs
+    });
+} else {
+    jsonLd.push({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": SITE_NAME,
+        "url": SITE_URL + "/",
+        "publisher": organization,
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": { "@type": "EntryPoint", "urlTemplate": SITE_URL + "/search?q={search_term_string}" },
+            "query-input": "required name=search_term_string"
+        }
+    });
+}
+%>
+    <title><%= seoTitle %></title>
+    <meta name="description" content="<%= seoDescription %>">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="<%= seoCanonical %>">
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="<%= SITE_NAME %>">
+    <meta property="og:type" content="<%= seoType %>">
+    <meta property="og:title" content="<%= seoTitle %>">
+    <meta property="og:description" content="<%= seoDescription %>">
+    <meta property="og:url" content="<%= seoCanonical %>">
+    <meta property="og:image" content="<%= seoImage %>">
+<% if (seoType === "article" && seoPost) { %>
+<% if (toIso(seoPost.published_at || seoPost.created_at)) { %>
+    <meta property="article:published_time" content="<%= toIso(seoPost.published_at || seoPost.created_at) %>">
+<% } %>
+<% if (toIso(seoPost.updated_at)) { %>
+    <meta property="article:modified_time" content="<%= toIso(seoPost.updated_at) %>">
+<% } %>
+<% if (seoPost.category) { %>
+    <meta property="article:section" content="<%= seoPost.category %>">
+<% } %>
+<% } %>
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= seoTitle %>">
+    <meta name="twitter:description" content="<%= seoDescription %>">
+    <meta name="twitter:image" content="<%= seoImage %>">
+
+    <!-- Structured data -->
+<% jsonLd.forEach(function (schema) { %>
+    <script type="application/ld+json"><%- safeJson(schema) %></script>
+<% }) %>

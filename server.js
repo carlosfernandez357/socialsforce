@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const fs = require("fs");
 const db = require("./db");
@@ -6,6 +8,7 @@ const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const { getSidebarData } = require("./utils/sidebarData");
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -206,10 +209,21 @@ app.get("/article/:slug", async (req, res) => {
             backOptions[Math.floor(Math.random() * backOptions.length)];
 
 
+        // Tiempo de lectura (~200 palabras/minuto)
+        const plainText = String(post.content || "")
+            .replace(/<[^>]*>/g, " ")
+            .trim();
+        const wordCount = plainText ? plainText.split(/\s+/).length : 0;
+        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+        const sidebarData = await getSidebarData(db, post.id);
+
         res.render("article", {
             post,
             relatedPosts,
-            backDestination
+            backDestination,
+            readingTime,
+            sidebarData
         });
 
 
@@ -248,8 +262,11 @@ app.get("/recent", async (req, res) => {
             LIMIT 30
         `);
 
+        const sidebarData = await getSidebarData(db);
+
         res.render("recent", {
-            posts
+            posts,
+            sidebarData
         });
 
     } catch (error) {
@@ -281,8 +298,11 @@ app.get("/trending", async (req, res) => {
             LIMIT 30
         `);
 
+        const sidebarData = await getSidebarData(db);
+
         res.render("trending", {
-            posts
+            posts,
+            sidebarData
         });
 
     } catch (error) {
@@ -392,9 +412,12 @@ app.get("/category/:category", async (req, res) => {
         `, [category]);
 
 
+        const sidebarData = await getSidebarData(db);
+
         res.render("category", {
             category,
-            posts
+            posts,
+            sidebarData
         });
 
 
@@ -416,9 +439,12 @@ app.get("/search", async (req, res) => {
     const query = (req.query.q || "").trim();
 
     if (!query) {
+        const sidebarData = await getSidebarData(db);
+
         return res.render("search", {
             query: "",
-            results: []
+            results: [],
+            sidebarData
         });
     }
 
@@ -447,9 +473,12 @@ app.get("/search", async (req, res) => {
         booleanQuery
     ]);
 
+    const sidebarData = await getSidebarData(db);
+
     res.render("search", {
         query,
-        results
+        results,
+        sidebarData
     });
 
 });
