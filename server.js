@@ -931,7 +931,7 @@ io.on("connection", socket => {
     });
 });
 
-app.get("/admin", requireAdmin, async (req, res) => {
+app.get("/admin", async (req, res) => {
     const token = req.cookies.admin_token;
     
     if (!token) {
