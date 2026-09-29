@@ -47,6 +47,7 @@
     <link rel="canonical"
         href="https://socialsforce.com/recent">
 
+    <link rel="stylesheet" href="/css/sidebar.css">
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-W0JR7YHY4C"></script>
@@ -88,6 +89,10 @@
 
                 </div>
 
+
+                <div class="content-sidebar-layout">
+
+                <div class="main-content">
 
                 <% if (posts && posts.length > 0) { %>
 
@@ -174,6 +179,15 @@
                 </div>
 
                 <% } %>
+
+                </div>
+
+                <aside class="sidebar" aria-label="More articles">
+                    <%- include('partials/sidebar', { sidebarData: typeof sidebarData !== "undefined" ? sidebarData : null }) %>
+                </aside>
+
+                </div>
+
 
 
             </div>

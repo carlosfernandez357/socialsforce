@@ -5,6 +5,7 @@
     <title>Search - SocialsForce</title>
 
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
 
 </head>
 <body>
@@ -21,7 +22,9 @@
 
 <main class="search-page">
 
-    <div class="content-container">
+    <div class="content-container content-sidebar-layout">
+
+      <div class="main-content">
 
         <h1>
             Search
@@ -101,6 +104,12 @@
             <% }) %>
 
         </div>
+
+      </div>
+
+      <aside class="sidebar" aria-label="More articles">
+          <%- include('partials/sidebar', { sidebarData: typeof sidebarData !== "undefined" ? sidebarData : null }) %>
+      </aside>
 
     </div>
 

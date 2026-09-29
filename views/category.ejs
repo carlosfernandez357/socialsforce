@@ -40,6 +40,7 @@
         rel="stylesheet"
     >
 
+    <link rel="stylesheet" href="/css/sidebar.css">
 </head>
 
 <!-- Google tag (gtag.js) -->
@@ -81,6 +82,10 @@
 
                 </div>
 
+
+                <div class="content-sidebar-layout">
+
+                <div class="main-content">
 
                 <% if (posts && posts.length > 0) { %>
 
@@ -172,6 +177,15 @@
 
 
                 <% } %>
+
+                </div>
+
+                <aside class="sidebar" aria-label="More articles">
+                    <%- include('partials/sidebar', { sidebarData: typeof sidebarData !== "undefined" ? sidebarData : null }) %>
+                </aside>
+
+                </div>
+
 
 
             </div>

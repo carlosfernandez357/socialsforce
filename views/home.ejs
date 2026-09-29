@@ -14,6 +14,7 @@
     }) %>
 
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="icon" href="/images/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -135,9 +136,9 @@
 
                 <% trendingPosts.forEach(post => { %>
 
-                <article class="post-card">
+                <article class="post-card card-linked">
 
-                    <a href="/article/<%= post.slug %>">
+                    <div class="post-card-inner">
 
                         <% if (post.image) { %>
 
@@ -153,14 +154,14 @@
 
                             <% if (post.category) { %>
 
-                            <span class="post-category">
+                            <a href="/category/<%= encodeURIComponent(post.category.toLowerCase()) %>" class="post-category card-category-link">
                                 <%= post.category %>
-                            </span>
+                            </a>
 
                             <% } %>
 
                             <h3 class="post-title">
-                                <%= post.title %>
+                                <a href="/article/<%= post.slug %>" class="stretched-link"><%= post.title %></a>
                             </h3>
 
                             <span class="post-date">
@@ -173,7 +174,7 @@
 
                         </div>
 
-                    </a>
+                    </div>
 
                 </article>
 
@@ -213,12 +214,9 @@
 
                 <% latestPosts.forEach(post => { %>
 
-                <article class="horizontal-post-card">
+                <article class="horizontal-post-card card-linked">
 
-                    <a
-                        href="/article/<%= post.slug %>"
-                        class="horizontal-post-link"
-                    >
+                    <div class="horizontal-post-link">
 
                         <% if (post.image) { %>
 
@@ -234,14 +232,14 @@
 
                             <% if (post.category) { %>
 
-                            <span class="post-category">
+                            <a href="/category/<%= encodeURIComponent(post.category.toLowerCase()) %>" class="post-category card-category-link">
                                 <%= post.category %>
-                            </span>
+                            </a>
 
                             <% } %>
 
                             <h3 class="post-title">
-                                <%= post.title %>
+                                <a href="/article/<%= post.slug %>" class="stretched-link"><%= post.title %></a>
                             </h3>
 
                             <% if (post.excerpt) { %>
@@ -262,7 +260,7 @@
 
                         </div>
 
-                    </a>
+                    </div>
 
                 </article>
 
@@ -275,6 +273,33 @@
     </section>
 
     <% } %>
+
+
+    <!-- FOR YOU -->
+
+    <section class="foryou-section" id="foryou-section" aria-labelledby="foryou-title">
+
+        <div class="content-container">
+
+            <div class="section-header">
+
+                <h2 id="foryou-title" class="section-title">
+                    For You
+                </h2>
+
+                <span class="section-subtitle">
+                    Recommended based on your interests
+                </span>
+
+            </div>
+
+            <div class="foryou-grid" id="foryou-grid">
+                <!-- cargado por JS -->
+            </div>
+
+        </div>
+
+    </section>
 
 
     <!-- RANDOM CATEGORY -->
@@ -354,6 +379,57 @@
 <%- include("partials/footer") %>
 
 <script src="/js/main.js"></script>
+
+<!-- FOR YOU: recomendaciones -->
+<script>
+(function () {
+    function esc(str) {
+        return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    var cats = [], seen = [];
+    try {
+        cats = JSON.parse(localStorage.getItem('sf_cats') || '[]');
+        seen = JSON.parse(localStorage.getItem('sf_seen') || '[]');
+    } catch (e) {}
+
+    var counts = cats.reduce(function (acc, c) { acc[c] = (acc[c] || 0) + 1; return acc; }, {});
+    var topCats = Object.keys(counts)
+        .sort(function (a, b) { return counts[b] - counts[a]; })
+        .slice(0, 3);
+
+    var params = new URLSearchParams();
+    if (topCats.length) params.set('cats', topCats.join(','));
+    if (seen.length) params.set('exclude', seen.slice(-20).join(','));
+
+    fetch('/api/para-ti?' + params.toString())
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (!data || !data.success || !data.posts || !data.posts.length) return;
+
+            var grid = document.getElementById('foryou-grid');
+
+            grid.innerHTML = data.posts.map(function (p) {
+                var excerpt = String(p.excerpt || '');
+                if (excerpt.length > 100) excerpt = excerpt.substring(0, 100).trim() + '…';
+
+                return '<article class="foryou-card card-linked">' +
+                    (p.image ? '<img src="' + esc(p.image) + '" alt="' + esc(p.title) + '" loading="lazy">' : '') +
+                    '<div class="foryou-card-body">' +
+                        (p.category ? '<a href="/category/' + encodeURIComponent(String(p.category).toLowerCase()) + '" class="card-category card-category-link">' + esc(p.category) + '</a>' : '') +
+                        '<h3><a href="/article/' + encodeURIComponent(p.slug) + '" class="stretched-link">' + esc(p.title) + '</a></h3>' +
+                        (excerpt ? '<p>' + esc(excerpt) + '</p>' : '') +
+                    '</div>' +
+                '</article>';
+            }).join('');
+
+            document.getElementById('foryou-section').style.display = 'block';
+        })
+        .catch(function () {});
+})();
+</script>
 
 </body>
 </html>

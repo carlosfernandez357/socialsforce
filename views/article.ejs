@@ -1,5 +1,6 @@
 <%
 const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCase()) : null;
+const crumbTitle = String(post.title || "").length > 50 ? String(post.title).slice(0, 50).trim() + "…" : post.title;
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +59,7 @@ const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCas
                 <a href="/category/<%= categorySlug %>"><%= post.category %></a>
                 <span class="breadcrumb-separator" aria-hidden="true">›</span>
                 <% } %>
-                <span class="breadcrumb-current" aria-current="page"><%= post.title %></span>
+                <span class="breadcrumb-current" aria-current="page" title="<%= post.title %>"><%= crumbTitle %></span>
             </nav>
         </div>
 
@@ -97,40 +98,16 @@ const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCas
                     <% } %>
 
 
-                    <div class="article-meta">
-
-                        <% if (post.published_at) { %>
-
-                        <time
-                            datetime="<%= new Date(post.published_at).toISOString() %>"
-                        >
-                            <%= new Date(post.published_at).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric"
-                            }) %>
-                        </time>
-
-                        <% } %>
-
-
-                        <% if (typeof readingTime !== "undefined" && readingTime) { %>
-
-                        <span class="reading-time">
-                            <%= readingTime %> min read
-                        </span>
-
-                        <% } %>
-
-
-                        <% if (post.views !== undefined && post.views !== null) { %>
-
-                        <span class="article-views">
-                            <%= Number(post.views).toLocaleString("en-US") %> views
-                        </span>
-
-                        <% } %>
-
+                    <div class="article-byline">
+                        <img src="/images/logo.png" alt="SocialsForce Editorial" class="byline-avatar" width="40" height="40">
+                        <div class="byline-info">
+                            <span class="byline-author">SocialsForce Editorial</span>
+                            <span class="byline-meta">
+                                <% if (post.published_at) { %><time datetime="<%= new Date(post.published_at).toISOString() %>"><%= new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></time><% } %>
+                                <% if (typeof readingTime !== "undefined" && readingTime) { %> · <%= readingTime %> min read<% } %>
+                                <% if (post.views !== undefined && post.views !== null) { %> · <%= Number(post.views).toLocaleString('en-US') %> views<% } %>
+                            </span>
+                        </div>
                     </div>
 
                 </header>
@@ -141,33 +118,6 @@ const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCas
 
 
 
-        <!-- ARTICLE IMAGE -->
-
-        <% if (post.image) { %>
-
-        <section class="article-image-section">
-
-            <div class="content-container">
-
-                <figure class="article-image-wrapper">
-
-                    <img
-                        src="<%= post.image %>"
-                        alt="<%= post.title %>"
-                        class="article-main-image"
-                        fetchpriority="high"
-                    >
-
-                </figure>
-
-            </div>
-
-        </section>
-
-        <% } %>
-
-
-
         <!-- CONTENT + SIDEBAR -->
 
         <section class="article-content-section">
@@ -175,6 +125,19 @@ const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCas
             <div class="content-container content-sidebar-layout">
 
                 <div class="article-main">
+
+                    <% if (post.image) { %>
+
+                    <figure class="article-image-wrapper">
+                        <img
+                            src="<%= post.image %>"
+                            alt="<%= post.title %>"
+                            class="article-hero-img"
+                            fetchpriority="high"
+                        >
+                    </figure>
+
+                    <% } %>
 
                     <article class="article-content">
 
@@ -313,6 +276,26 @@ const categorySlug = post.category ? encodeURIComponent(post.category.toLowerCas
     <script src="/js/main.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- For You: guardar historial de lectura (solo en el navegador) -->
+    <script>
+    (function () {
+        try {
+            var cat = <%- JSON.stringify(post.category || "").replace(/</g, "\\u003c") %>;
+            var id = <%- Number(post.id) || 0 %>;
+            if (cat) {
+                var cats = JSON.parse(localStorage.getItem('sf_cats') || '[]');
+                cats.push(cat);
+                localStorage.setItem('sf_cats', JSON.stringify(cats.slice(-50)));
+            }
+            if (id) {
+                var seen = JSON.parse(localStorage.getItem('sf_seen') || '[]');
+                if (seen.indexOf(id) === -1) seen.push(id);
+                localStorage.setItem('sf_seen', JSON.stringify(seen.slice(-100)));
+            }
+        } catch (e) {}
+    })();
+    </script>
 
 </body>
 
